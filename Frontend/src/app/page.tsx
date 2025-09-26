@@ -3,49 +3,45 @@ import styles from "./page.module.css";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <div>
+      <div className={styles["profile-container"]}>
+        {/* Encabezado */}
+        <div className={styles["profile-header"]}>
+          <ul>
+            <li>
+              <img src="/ElPerro.jpg" alt="Avatar" />
+            </li>
+            <li>
+              <h2>El perro 🐕</h2>
+              <p>@ElPerro</p>
+              <p>Aprendiendo React</p>
+            </li>
+          </ul>
         </div>
-      </main>
+
+        {/* Stats */}
+        <div className={styles.stats}>
+          <span><strong>150</strong> Siguiendo</span>
+          <span><strong>200</strong> Seguidores</span>
+          <span><strong>50</strong> Posts</span>
+        </div>
+
+        {/* Tweets */}
+        <div className={styles.tweet}>
+          <p className={styles["tweet-user"]}>Abel Breaker</p>
+          <p className={styles["tweet-text"]}>Mi primer post</p>
+        </div>
+
+        <div className={styles.tweet}>
+          <p className={styles["tweet-user"]}>El gato</p>
+          <p className={styles["tweet-text"]}>Me encanta programar con CSS 😍</p>
+        </div>
+
+        <div className={styles.tweet}>
+          <p className={styles["tweet-user"]}>Juan Pérez</p>
+          <p className={styles["tweet-text"]}>Practicando un clon de Twitter 🐦</p>
+        </div>
+      </div>
       <footer className={styles.footer}>
         <a
           href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
