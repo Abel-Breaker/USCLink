@@ -1,10 +1,12 @@
 import Image from "next/image";
 import styles from "./page.module.css";
-import CreateUser from "./CreateUser";
+import CreateUser from "./users/Creation";
+import Nav from "./Nav";
 
 export default function Home() {
   return (
     <div>
+      <Nav />
       <div className={styles["profile-container"]}>
         {/* Encabezado */}
         <div className={styles["profile-header"]}>
@@ -44,7 +46,8 @@ export default function Home() {
         </div>
       </div>
       <footer className={styles.footer}>
-        <CreateUser />
+        {/* Enlace a la página de creación de usuario */}
+        <a href="/create-user">Ir a Crear Usuario</a>
       </footer>
     </div>
   );

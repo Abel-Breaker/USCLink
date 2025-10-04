@@ -30,6 +30,10 @@ public class UserService {
         return userRepository.findAllByUsername(username);
     }
 
+    public Set<User> getUsers() {
+        return userRepository.findAll();
+    }
+
     public boolean userExist(String username){
         return userRepository.existsByUsername(username);
     }
