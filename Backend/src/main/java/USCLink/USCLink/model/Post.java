@@ -1,5 +1,7 @@
 package USCLink.USCLink.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -10,14 +12,19 @@ public class Post
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = false)
+    // Foreign key to User.username
+    @ManyToOne
+    @JoinColumn(name = "user_username", referencedColumnName = "username")
+    private User user;
+
+    @Column(nullable = false, unique = true)
     private String pathToFile;
 
 
-    public Post(Long id, String pathToFile) 
+    public Post(User user, String fileName) 
     {
-        this.id = id;
-        this.pathToFile = pathToFile;
+        this.user = user;
+        this.pathToFile = "./uploads/" + user.getUsername() + "/" + UUID.randomUUID().toString() + "_" + fileName;
     }
 
     public Long getId() 
@@ -25,19 +32,9 @@ public class Post
         return id;
     }
 
-    public void setId(Long id) 
-    {
-        this.id = id;
-    }
-
     public String getpathToFile() 
     {
         return pathToFile;
-    }
-
-    public void setpathToFile(String pathToFile) 
-    {
-        this.pathToFile = pathToFile;
     }
 }
 
