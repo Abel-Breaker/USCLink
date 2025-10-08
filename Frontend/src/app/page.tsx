@@ -6,7 +6,7 @@ import Nav from "./Nav";
 export default function Home() {
   return (
     <div>
-      <Nav />
+      <Nav/>
       <div className={styles["profile-container"]}>
         {/* Encabezado */}
         <div className={styles["profile-header"]}>
@@ -47,7 +47,7 @@ export default function Home() {
       </div>
       <footer className={styles.footer}>
         {/* Enlace a la página de creación de usuario */}
-        <a href="/create-user">Ir a Crear Usuario</a>
+        <a href="/users">Ir a Crear Usuario</a>
       </footer>
     </div>
   );

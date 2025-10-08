@@ -4,16 +4,20 @@ import USCLink.USCLink.model.User;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 import java.util.Set;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends CrudRepository<User, String> {
     // Buscar un usuario por username
     Set<User> findAllByUsername(String username);
 
     // Buscar un usuario por username
-    Set<User> findAll();
+    Page<User> findAll(Pageable pageRequest);
 
     // Comprobar si existe un username
     boolean existsByUsername(String username);

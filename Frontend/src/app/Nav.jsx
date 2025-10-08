@@ -12,6 +12,8 @@ export default function Nav() {
     }}>
       <Link href="/">Perfil</Link>
       <Link href="/users">Usuarios</Link>
+      <Link href="/posts">Posts</Link>
+      <Link href="/comments">Comentarios</Link>
       <Link href="/">Inicio</Link>
     </nav>
   );

@@ -4,39 +4,38 @@ import { useState, useEffect } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "../page.module.css";
 
-export default function CreateUserForm() {
+export default function CreatePostsForm() {
     // Estado para almacenar los valores del formulario
     const [formData, setFormData] = useState({
-        username: "",
-        email: "",
-        telephone: 0,
+        user: "",
+        pathToFile: ""
     });
 
     // Nuevo estado para guardar la respuesta del servicio y errores
-    const [createdUser, setCreatedUser] = useState(null);
+    const [createdPost, setCreatedPost] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // Lista de usuarios
-    const [users, setUsers] = useState([]);
-    const [loadingUsers, setLoadingUsers] = useState(false);
+    // Lista de posts
+    const [posts, setPosts] = useState([]);
+    const [loadingPosts, setLoadingPosts] = useState(false);
 
     // Obtener lista de usuarios desde el backend
-    const fetchUsers = async () => {
+    const fetchPosts = async () => {
         try {
-            setLoadingUsers(true);
-            const resp = await axios.get("http://localhost:8080/users/"); 
-            console.log("Usuarios obtenidos:", resp.data.content);
-            setUsers(Array.isArray(resp.data.content) ? resp.data.content : []);
+            setLoadingPosts(true);
+            const resp = await axios.get("http://localhost:8080/posts/"); 
+            console.log("Publicaciones obtenidas:", resp.data.content);
+            setPosts(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
-            console.error("Error al obtener usuarios:", err);
+            console.error("Error al obtener las publicaciones:", err);
         } finally {
-            setLoadingUsers(false);
+            setLoadingPosts(false);
         }
     };
 
     useEffect(() => {
-        fetchUsers();
+        fetchPosts();
     }, []);
 
     // Función para actualizar el estado cuando el usuario escribe
@@ -51,8 +50,7 @@ export default function CreateUserForm() {
     const handleSubmit = async (e) => {
         e.preventDefault(); // Evita que la página se recargue
         const dataToSend = {
-            ...formData,
-            telephone: Number(formData.telephone) // convierte a número
+            ...formData
         };
         console.log("Enviando datos:", dataToSend);
 
@@ -60,22 +58,22 @@ export default function CreateUserForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/users/", // URL del backend
+                "http://localhost:8080/posts/", // URL del backend
                 dataToSend
             );
-            setCreatedUser(response.data);
+            setCreatedPost(response.data);
             if (response.data) {
-                setUsers(prev => [response.data, ...prev]);
+                setPosts(prev => [response.data, ...prev]);
             } else {
                 // si no devuelve, refrescar la lista
-                fetchUsers();
+                fetchPosts();
             }
 
             // Limpiar formulario
-            setFormData({ username: "", email: "", telephone: "" });
+            setFormData({ user: "", pathToFile: ""});
             
         } catch (error) {
-            console.error("Error al crear usuario:", error);
+            console.error("Error al publicar:", error);
             setError(error);
             alert("Hubo un error al enviar los datos");
         } finally {
@@ -88,18 +86,18 @@ export default function CreateUserForm() {
             <form className={styles["create-form"]} onSubmit={handleSubmit}>
                 <input
                     type="text"
-                    name="username"
+                    name="user"
                     placeholder="Nombre de usuario"
                     className={styles["tweet-input"]}
-                    value={formData.username}
+                    value={formData.user}
                     onChange={handleChange}
                 />
                 <input
-                    type="text"
-                    name="email"
+                    type="file"
+                    name="pathToFile"
                     placeholder="Correo electrónico"
                     className={styles["tweet-input"]}
-                    value={formData.email}
+                    value={formData.pathToFile}
                     onChange={handleChange}
                 />
                 <input
@@ -111,26 +109,26 @@ export default function CreateUserForm() {
                     onChange={handleChange}
                 />
                 <button type="submit" className={styles["tweet-button"]}>
-                    Crear
+                    Publicar
                 </button>
             </form>
             {/* Mostrar resultado cuando llegue la respuesta */}
             {createdUser && (
                 <>
-                    <p id="label">Usuario creado:</p>
-                    <pre id="user">{JSON.stringify(createdUser, null, 2)}</pre>
+                    <p id="label">Post creado:</p>
+                    <pre id="user">{JSON.stringify(createdPost, null, 2)}</pre>
                 </>
             )}
 
             {/* Mensaje de error */}
-            {error && <p style={{ color: "red" }}>Error al crear usuario. Revisa la consola.</p>}
+            {error && <p style={{ color: "red" }}>Error al crear el post. Revisa la consola.</p>}
 
             <hr style={{ margin: "20px 0" }} />
 
-            <h3>Usuarios</h3>
-            {loadingUsers ? (
-                <p>Cargando usuarios...</p>
-            ) : users.length === 0 ? (
+            <h3>Publicaciones</h3>
+            {loadingPosts ? (
+                <p>Cargando posts...</p>
+            ) : posts.length === 0 ? (
                 <p>No se encontraron usuarios.</p>
             ) : (
                 <div style={{ overflowX: "auto" }}>
@@ -138,16 +136,14 @@ export default function CreateUserForm() {
                         <thead>
                             <tr>
                                 <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ddd" }}>Usuario</th>
-                                <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ddd" }}>Email</th>
-                                <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ddd" }}>Teléfono</th>
+                                <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ddd" }}>PathToFile</th>
                             </tr>
                         </thead>
                         <tbody>
                             {users.map((u, idx) => (
                                 <tr key={u.id ?? idx}>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.username ?? u.name ?? "-"}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.email ?? "-"}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.telephone ?? "-"}</td>
+                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.user ?? "-"}</td>
+                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.pathToFile ?? "-"}</td>
                                 </tr>
                             ))}
                         </tbody>
