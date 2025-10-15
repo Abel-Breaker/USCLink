@@ -19,16 +19,13 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User createUser(String username, String email, Long telephone) throws IllegalArgumentException {
-        User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setTelephone(telephone);
-        if (!userExist(username)) {
-            System.out.println("Creating user: " + username + ", " + email + ", " + telephone);
+    public User createUser(User user) throws IllegalArgumentException {
+        User newUser = user;
+        if (!userExist(newUser.getUsername())) {
+            System.out.println("Creating user: " + user.getUsername() + ", " + user.getEmail() + ", " + user.getTelephone());
             return userRepository.save(user);
         } else {
-            throw new IllegalArgumentException("El usuario ya existe: " + username);
+            throw new IllegalArgumentException("El usuario ya existe: " + user.getUsername());
         }
     }
 

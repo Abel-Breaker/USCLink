@@ -36,23 +36,11 @@ public class User {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public Long getTelephone() {
         return telephone;
-    }
-
-    public void setTelephone(Long telephone) {
-        this.telephone = telephone;
     }
 }

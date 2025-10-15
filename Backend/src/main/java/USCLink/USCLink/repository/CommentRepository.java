@@ -1,6 +1,6 @@
 package USCLink.USCLink.repository;
 
-import USCLink.USCLink.model.Post;
+import USCLink.USCLink.model.Comment;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +11,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Set;
 
 @Repository
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface CommentRepository extends CrudRepository<Comment, Long> {
 
-    // Buscar los posts
-    Page<Post> findAll(Pageable pageRequest);
+    // Buscar los commentarios
+    Page<Comment> findAll(Pageable pageRequest);
+
+    // Buscar los comentarios por id
+    Set<Comment> findAllById(Long id);
 }
