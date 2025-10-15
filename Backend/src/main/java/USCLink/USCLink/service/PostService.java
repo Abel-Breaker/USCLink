@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -23,6 +25,10 @@ public class PostService {
         Post post = new Post(user, fileName);
         System.out.println("Creating post for user: " + user.getUsername() + ", file: " + fileName);
         return postRepository.save(post);
+    }
+
+    public Page<Post> getPosts(PageRequest pageRequest) {
+        return postRepository.findAll(pageRequest);
     }
     
 }

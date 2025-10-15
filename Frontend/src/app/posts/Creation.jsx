@@ -24,7 +24,7 @@ export default function CreatePostsForm() {
     const fetchPosts = async () => {
         try {
             setLoadingPosts(true);
-            const resp = await axios.get("http://localhost:8080/posts/"); 
+            const resp = await axios.get("http://localhost:8080/posts/");
             console.log("Publicaciones obtenidas:", resp.data.content);
             setPosts(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -40,38 +40,38 @@ export default function CreatePostsForm() {
 
     // Función para actualizar el estado cuando el usuario escribe
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value, files } = e.target;
+        if (name === "pathToFile") {
+            setFormData({ ...formData, pathToFile: files[0] }); // guarda el archivo
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     // Función que se ejecuta al enviar el formulario
     const handleSubmit = async (e) => {
         e.preventDefault(); // Evita que la página se recargue
-        const dataToSend = {
-            ...formData
-        };
-        console.log("Enviando datos:", dataToSend);
+
+        const formDataToSend = new FormData();
+        // El backend espera que el JSON venga como "user" (string)
+        formDataToSend.append("user", new Blob([JSON.stringify({ username: formData.user })], { type: "application/json" }));
+        formDataToSend.append("file", formData.pathToFile);
 
         try {
             setLoading(true);
             setError(null);
             const response = await axios.post(
                 "http://localhost:8080/posts/", // URL del backend
-                dataToSend
+                formDataToSend,
+                {
+                    headers: { "Content-Type": "multipart/form-data" }
+                }
             );
             setCreatedPost(response.data);
-            if (response.data) {
-                setPosts(prev => [response.data, ...prev]);
-            } else {
-                // si no devuelve, refrescar la lista
-                fetchPosts();
-            }
 
             // Limpiar formulario
-            setFormData({ user: "", pathToFile: ""});
-            
+            setFormData({ user: "", pathToFile: "" });
+
         } catch (error) {
             console.error("Error al publicar:", error);
             setError(error);
@@ -95,17 +95,7 @@ export default function CreatePostsForm() {
                 <input
                     type="file"
                     name="pathToFile"
-                    placeholder="Correo electrónico"
                     className={styles["tweet-input"]}
-                    value={formData.pathToFile}
-                    onChange={handleChange}
-                />
-                <input
-                    type="number"
-                    name="telephone"
-                    placeholder="Teléfono"
-                    className={styles["tweet-input"]}
-                    value={formData.telephone}
                     onChange={handleChange}
                 />
                 <button type="submit" className={styles["tweet-button"]}>
@@ -113,7 +103,7 @@ export default function CreatePostsForm() {
                 </button>
             </form>
             {/* Mostrar resultado cuando llegue la respuesta */}
-            {createdUser && (
+            {createdPost && (
                 <>
                     <p id="label">Post creado:</p>
                     <pre id="user">{JSON.stringify(createdPost, null, 2)}</pre>
@@ -129,7 +119,7 @@ export default function CreatePostsForm() {
             {loadingPosts ? (
                 <p>Cargando posts...</p>
             ) : posts.length === 0 ? (
-                <p>No se encontraron usuarios.</p>
+                <p>No se encontraron posts.</p>
             ) : (
                 <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -140,10 +130,13 @@ export default function CreatePostsForm() {
                             </tr>
                         </thead>
                         <tbody>
-                            {users.map((u, idx) => (
+                            {posts.map((u, idx) => (
                                 <tr key={u.id ?? idx}>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.user ?? "-"}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.pathToFile ?? "-"}</td>
+                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.user.username ?? "-"}</td>
+                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.pathToFile ? <img
+                                        src={`/${u.pathToFile}`}
+                                        alt="Imagen del usuario"
+                                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px" }}/> : "-"}</td>
                                 </tr>
                             ))}
                         </tbody>

@@ -20,6 +20,7 @@ public class Post
     @Column(nullable = false, unique = true)
     private String pathToFile;
 
+    public Post() {}
 
     public Post(User user, String fileName) 
     {
@@ -32,7 +33,12 @@ public class Post
         return id;
     }
 
-    public String getpathToFile() 
+    public User getUser() 
+    {
+        return user;
+    }
+
+    public String getPathToFile() 
     {
         return pathToFile;
     }
