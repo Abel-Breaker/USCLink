@@ -25,10 +25,11 @@ import java.util.Set;
 @RestController
 @RequestMapping("/comments")
 public class CommentController {
-
+    
+    @Autowired
     CommentService commentService;
 
-    @Autowired
+    
     public CommentController(CommentService commentService) {
         this.commentService = commentService;
     }

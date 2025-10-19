@@ -35,5 +35,13 @@ public class FollowService {
     public Set<Follow> getCoincidentFollowsById(Long id) {
         return followRepository.findAllById(id);
     }
+
+    public Page<Follow> getFollowsByFollowedUsername(String username, PageRequest pageRequest) {
+        return followRepository.findAllByFollowedUsername(username, pageRequest);
+    }
+
+    public Page<Follow> getFollowsByFollowerUsername(String username, PageRequest pageRequest) {
+        return followRepository.findAllByFollowerUsername(username, pageRequest);
+    }
     
 }

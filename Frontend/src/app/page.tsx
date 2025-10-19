@@ -2,6 +2,8 @@ import Image from "next/image";
 import styles from "./page.module.css";
 import CreateUser from "./users/Creation";
 import Nav from "./Nav";
+import Posts from "./Posts";
+import Stats from "./Stats";
 
 export default function Home() {
   return (
@@ -23,27 +25,10 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        <div className={styles.stats}>
-          <span><strong>150</strong> Siguiendo</span>
-          <span><strong>200</strong> Seguidores</span>
-          <span><strong>50</strong> Posts</span>
-        </div>
+        <Stats perfil="vilarino16"/>
 
-        {/* Tweets */}
-        <div className={styles.tweet}>
-          <p className={styles["tweet-user"]}>Abel Breaker</p>
-          <p className={styles["tweet-text"]}>Mi primer post</p>
-        </div>
-
-        <div className={styles.tweet}>
-          <p className={styles["tweet-user"]}>El gato</p>
-          <p className={styles["tweet-text"]}>Me encanta programar con CSS 😍</p>
-        </div>
-
-        <div className={styles.tweet}>
-          <p className={styles["tweet-user"]}>Juan Pérez</p>
-          <p className={styles["tweet-text"]}>Practicando un clon de Twitter 🐦</p>
-        </div>
+        {/* Posts */}
+        <Posts perfil="vilarino16"/>
       </div>
       <footer className={styles.footer}>
         {/* Enlace a la página de creación de usuario */}

@@ -25,9 +25,9 @@ import java.util.Set;
 @RequestMapping("/posts")
 public class PostController {
 
+    @Autowired
     PostService postService;
 
-    @Autowired
     public PostController(PostService postService) {
         this.postService = postService;
     }
@@ -45,7 +45,8 @@ public class PostController {
             Post newPost = this.postService.createPost(user, file.getOriginalFilename());
 
             // Crear el archivo y su carpeta padre si no existen
-            String uploadsDir = "../Frontend/public/" + newPost.getPathToFile(); //Ruta en el frontend para que pueda acceder a la imagen
+            String uploadsDir = "../Frontend/public/" + newPost.getPathToFile(); // Ruta en el frontend para que pueda
+                                                                                 // acceder a la imagen
             File destinationFile = new File(uploadsDir);
             destinationFile.getParentFile().mkdirs(); // crea ./uploads/usuario si no existe
 
@@ -65,7 +66,18 @@ public class PostController {
     public ResponseEntity<Page<Post>> getPosts(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
-            @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort) {
+            @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort,
+            @RequestParam(value = "followedBy", required = false, defaultValue = "") String followedBy,
+            @RequestParam(value = "perfil", required = false, defaultValue = "") User perfil){
+        if (!followedBy.isEmpty()) {
+            return ResponseEntity.ok(postService.getPostsFollowedByUser(followedBy, PageRequest.of(page, pagesize,
+                    Sort.by("id"))));
+        }
+        if (perfil != null) {
+            return ResponseEntity.ok(postService.getPostsByUserUsername(perfil, PageRequest.of(page, pagesize,
+                    Sort.by("id"))));
+            
+        }
         return ResponseEntity.ok(postService.getPosts(PageRequest.of(page, pagesize,
                 Sort.by("id"))));
     }

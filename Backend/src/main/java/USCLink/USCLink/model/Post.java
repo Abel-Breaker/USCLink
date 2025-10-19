@@ -20,6 +20,8 @@ public class Post
     @Column(nullable = false, unique = true)
     private String pathToFile;
 
+    //TODO: Agregar fecha de creación y contenido de texto
+
     public Post() {}
 
     public Post(User user, String fileName) 

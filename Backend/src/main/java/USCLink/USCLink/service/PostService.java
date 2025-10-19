@@ -30,5 +30,13 @@ public class PostService {
     public Page<Post> getPosts(PageRequest pageRequest) {
         return postRepository.findAll(pageRequest);
     }
+
+    public Page<Post> getPostsFollowedByUser(String username, PageRequest pageRequest) {
+        return postRepository.findPostsByUserFollowersUsername(username, pageRequest);
+    }
+
+    public Page<Post> getPostsByUserUsername(User user, PageRequest pageRequest) {
+        return postRepository.findAllByUser(user, pageRequest);
+    }
     
 }

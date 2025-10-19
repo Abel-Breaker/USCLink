@@ -23,4 +23,12 @@ public interface FollowRepository extends CrudRepository<Follow, Long> {
 
     // Buscar follows por id
     Set<Follow> findAllById(Long id);
+
+    // Buscar follows por el username del usuario seguido
+    @Query("SELECT f FROM Follow f WHERE f.user2.username = ?1")
+    Page<Follow> findAllByFollowedUsername(String username, Pageable pageRequest);
+
+    // Buscar follows por el username del usuario seguidor
+    @Query("SELECT f FROM Follow f WHERE f.user1.username = ?1")
+    Page<Follow> findAllByFollowerUsername(String username, Pageable pageRequest);
 }

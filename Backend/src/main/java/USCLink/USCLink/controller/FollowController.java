@@ -25,18 +25,27 @@ import java.util.Set;
 @RequestMapping("/follows")
 public class FollowController {
 
+    @Autowired
     FollowService followService;
 
-    @Autowired
     public FollowController(FollowService followService) {
         this.followService = followService;
     }
 
     @GetMapping("/")
-    public ResponseEntity<Page<Follow>> getFollows(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
+    public ResponseEntity<Page<Follow>> getFollows(
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
-            @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort
-) {
+            @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort,
+            @RequestParam(value = "followed", required = false) String followed,
+            @RequestParam(value = "followedBy", required = false) String followedBy) {
+        if (followed != null) {
+            return ResponseEntity.ok(followService.getFollowsByFollowedUsername(followed, PageRequest.of(page, pagesize,
+                    Sort.by("id"))));
+        } else if (followedBy != null) {
+            return ResponseEntity.ok(followService.getFollowsByFollowerUsername(followedBy, PageRequest.of(page, pagesize,
+                    Sort.by("id"))));
+        }        
         return ResponseEntity.ok(followService.getFollows(PageRequest.of(page, pagesize,
                 Sort.by("id"))));
     }
@@ -52,18 +61,20 @@ public class FollowController {
 
     @PostMapping("/")
     public ResponseEntity<Follow> addFollow(@RequestBody Follow follow) {
-        try{
+        try {
             follow = followService.createFollow(follow.getUser1(), follow.getUser2());
             System.out.println("Comment created: " + follow.getId());
 
             return ResponseEntity
-                    .created(MvcUriComponentsBuilder.fromMethodName(FollowController.class, "getFollow", follow.getId()).build().toUri())
+                    .created(MvcUriComponentsBuilder.fromMethodName(FollowController.class, "getFollow", follow.getId())
+                            .build().toUri())
                     .body(follow);
         } catch (Exception e) {
             System.out.println("Error creating comment: " + e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .location(MvcUriComponentsBuilder.fromMethodName(FollowController.class, "getFollow", follow.getId()).build().toUri())
+                    .location(MvcUriComponentsBuilder
+                            .fromMethodName(FollowController.class, "getFollow", follow.getId()).build().toUri())
                     .build();
         }
     }
