@@ -43,4 +43,9 @@ public class User {
     public Long getTelephone() {
         return telephone;
     }
+
+    @Override
+    public String toString() {
+        return this.username; // devuelve el nombre de usuario
+    }
 }

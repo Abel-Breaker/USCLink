@@ -15,6 +15,7 @@ export default function Nav() {
       <Link href="/posts">Posts</Link>
       <Link href="/comments">Comentarios</Link>
       <Link href="/follows">Seguidores</Link>
+      <Link href="/messages">Mensajes</Link>
       <Link href="/">Inicio</Link>
     </nav>
   );
