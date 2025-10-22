@@ -1,8 +1,10 @@
 package USCLink.USCLink.controller;
 
+import USCLink.USCLink.model.Chat;
 import USCLink.USCLink.model.Comment;
 import USCLink.USCLink.model.Message;
 import USCLink.USCLink.model.User;
+import USCLink.USCLink.service.ChatService;
 import USCLink.USCLink.service.CommentService;
 import USCLink.USCLink.service.PostService;
 import USCLink.USCLink.service.UserService;
@@ -25,28 +27,23 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/messages")
-public class MessagesController {
+@RequestMapping("/chat")
+public class ChatController {
     
     @Autowired
-    MessagesService messageService;
+    ChatService chatService;
 
     
-    public MessagesController(MessagesService messageService) {
-        this.messageService = messageService;
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
     }
 
     @GetMapping
-    public Page<Message> getMessages(
-            @RequestParam Long chatId,
+    public Page<Chat> getChats(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "timestamp") String sort) {
+            @RequestParam(defaultValue = "10") int size) {
 
-        return messageService.getMessagesByChatId(
-                chatId,
-                PageRequest.of(page, size, Sort.by(sort).ascending())
-        );
+        return chatService.getAllChats(PageRequest.of(page, size));
     }
 
 }

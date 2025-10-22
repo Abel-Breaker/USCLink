@@ -1,7 +1,7 @@
 'use client';
 
 // Messages.jsx
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "../page.module.css";
 
@@ -29,6 +29,39 @@ export default function Messages() {
     setMessages([...messages, { from: "Yo", text: newMessage }]);
     setNewMessage("");
   };
+
+  // Obtener lista de usuarios desde el backend
+      const fetchMessages = async () => {
+          try {
+              const resp = await axios.get("http://localhost:8080/messages", {
+            params: { chatId: 1 }
+        });
+        setMessages(resp.data.content);
+        console.log("Mensajes obtenidos:", resp.data.content);
+          } catch (err) {
+              console.error("Error al obtener las publicaciones:", err);
+          }
+      };
+  
+      useEffect(() => {
+          fetchMessages();
+      }, []);
+    
+      // Obtener lista de usuarios desde el backend
+      const fetchChats= async () => {
+          try {
+              const resp = await axios.get("http://localhost:8080/chat", {
+        });
+        setMessages(resp.data.content);
+        console.log("Chats obtenidos:", resp.data.content);
+          } catch (err) {
+              console.error("Error al obtener las publicaciones:", err);
+          }
+      };
+  
+      useEffect(() => {
+          fetchChats();
+      }, []);
 
   return (
     <div style={{ display: "flex", height: "80vh", border: "1px solid #ccc" }}>

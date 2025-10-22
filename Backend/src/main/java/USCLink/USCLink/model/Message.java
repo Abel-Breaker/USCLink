@@ -10,9 +10,14 @@ import jakarta.validation.constraints.Size;
 @Table(name = "Message")
 public class Message {
 
+    // TODO: De verdad un ID para cada mensaje?
     @Id
-    @JoinColumn(referencedColumnName = "id")
-    private Chat chat_id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "chat_id", referencedColumnName = "id")
+    private Chat chatId;
 
     @ManyToOne
     @JoinColumn(name = "user_username", referencedColumnName = "username")
@@ -26,6 +31,8 @@ public class Message {
     private String timestamp; // Timestamp of when the message was sent
 
 
+    public Message() {}
+
     public Message(User sender, String messageContent) 
     {
         this.sender = sender;
@@ -33,9 +40,9 @@ public class Message {
         this.timestamp = java.time.Instant.now().toString();
     }
 
-    public Chat getChat_id() 
+    public Chat getchatId() 
     {
-        return chat_id;
+        return chatId;
     }
     public User getSender() 
     {

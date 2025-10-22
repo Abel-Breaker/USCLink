@@ -2,9 +2,11 @@ package USCLink.USCLink.service;
 
 import USCLink.USCLink.model.Post;
 import USCLink.USCLink.model.User;
+import USCLink.USCLink.model.Chat;
 import USCLink.USCLink.model.Message;
 import USCLink.USCLink.repository.PostRepository;
 import USCLink.USCLink.repository.UserRepository;
+import USCLink.USCLink.repository.ChatRepository;
 import USCLink.USCLink.repository.MessagesRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,17 +24,17 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class MessagesService {
+public class ChatService {
 
     @Autowired
-    private MessagesRepository messageRepository;
+    private ChatRepository chatRepository;
 
-    public MessagesService(MessagesRepository messageRepository) {
-        this.messageRepository = messageRepository;
+    public ChatService(ChatRepository chatRepository) {
+        this.chatRepository = chatRepository;
     }
 
-    public Page<Message> getMessagesByChatId(Long chatId, Pageable pageable) {
-        return messageRepository.findByChatId_Id(chatId, pageable);
+    public Page<Chat> getAllChats(Pageable pageable) {
+        return chatRepository.findAll(pageable);
     }
     
 }

@@ -31,6 +31,9 @@ public class Chat {
     @Column(nullable = false)
     private String timestamp; // Timestamp of when the chat was created
 
+
+    public Chat() {}
+
     public Chat(String nameChat, List<User> users) 
     {
         this.nameChat = nameChat;

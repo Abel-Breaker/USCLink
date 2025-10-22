@@ -1,8 +1,6 @@
 package USCLink.USCLink.repository;
 
-import USCLink.USCLink.model.Post;
-import USCLink.USCLink.model.User;
-import USCLink.USCLink.model.Message;
+import USCLink.USCLink.model.Chat;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,9 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
-public interface MessagesRepository extends PagingAndSortingRepository<Message, Long> {
+public interface ChatRepository extends PagingAndSortingRepository<Chat, Long> {
 
-    // Obtener todos los mensajes de un chat
-    Page<Message> findByChatId_Id(Long chatId, Pageable pageable);
 
 }
+
