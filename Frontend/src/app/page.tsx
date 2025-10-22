@@ -14,7 +14,7 @@ export default function Home() {
         <div className={styles["profile-header"]}>
           <ul>
             <li>
-              <img src="/ElPerro.jpg" alt="Avatar" />
+              <img src={`http://localhost:8080/media/uploads/vilarino16/6bf274fb-5a09-4d99-8585-71894a1182b2_elperro.jpg`} alt="Avatar" />
             </li>
             <li>
               <h2>El perro 🐕</h2>

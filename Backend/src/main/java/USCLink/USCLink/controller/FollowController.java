@@ -1,6 +1,7 @@
 package USCLink.USCLink.controller;
 
 import USCLink.USCLink.model.Follow;
+import USCLink.USCLink.model.FollowId;
 import USCLink.USCLink.model.User;
 import USCLink.USCLink.service.FollowService;
 import USCLink.USCLink.service.UserService;
@@ -51,7 +52,7 @@ public class FollowController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Follow> getFollow(@PathVariable("id") Long id) {
+    public ResponseEntity<Follow> getFollow(@PathVariable("id") FollowId id) {
         try {
             return ResponseEntity.ok(followService.getCoincidentFollowsById(id).iterator().next());
         } catch (Exception e) {

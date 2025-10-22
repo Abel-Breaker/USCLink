@@ -56,7 +56,7 @@ export default function Posts({ perfil }) {
                                 <tr key={u.id ?? idx}>
                                     <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.user.username ?? "-"}</td>
                                     <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.pathToFile ? <img
-                                        src={`/${u.pathToFile}`}
+                                        src={`http://localhost:8080/media/${encodeURI(u.pathToFile ?? "")}`}
                                         alt="Imagen del usuario"
                                         style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px" }} /> : "-"}</td>
                                 </tr>

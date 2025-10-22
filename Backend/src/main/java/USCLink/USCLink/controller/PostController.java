@@ -45,8 +45,7 @@ public class PostController {
             Post newPost = this.postService.createPost(user, file.getOriginalFilename());
 
             // Crear el archivo y su carpeta padre si no existen
-            String uploadsDir = "../Frontend/public/" + newPost.getPathToFile(); // Ruta en el frontend para que pueda
-                                                                                 // acceder a la imagen
+            String uploadsDir = newPost.getPathToFile(); // Ruta en el frontend para que pueda acceder a la imagen
             File destinationFile = new File(uploadsDir);
             destinationFile.getParentFile().mkdirs(); // crea ./uploads/usuario si no existe
 

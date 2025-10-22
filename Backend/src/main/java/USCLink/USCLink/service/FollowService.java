@@ -2,6 +2,7 @@ package USCLink.USCLink.service;
 
 import USCLink.USCLink.model.Comment;
 import USCLink.USCLink.model.Follow;
+import USCLink.USCLink.model.FollowId;
 import USCLink.USCLink.model.User;
 import USCLink.USCLink.repository.FollowRepository;
 import USCLink.USCLink.repository.UserRepository;
@@ -32,7 +33,7 @@ public class FollowService {
         return followRepository.findAll(pageRequest);
     }
 
-    public Set<Follow> getCoincidentFollowsById(Long id) {
+    public Set<Follow> getCoincidentFollowsById(FollowId id) {
         return followRepository.findAllById(id);
     }
 

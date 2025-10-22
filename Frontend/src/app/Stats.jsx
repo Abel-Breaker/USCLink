@@ -21,10 +21,10 @@ export default function Stats({ perfil }) {
         }
         try {
             const resp = await axios.get("http://localhost:8080/posts/", {
-                params: { pefil: perfil },
+                params: { perfil: perfil },
                 // timeout: 5000, // opcional
             });
-            console.log("Publicaciones obtenidas:", resp.data.content);
+            console.log("Publicaciones obtenidas en las estadísticas:", resp.data.content);
             setPosts(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
             console.error("Error al obtener las publicaciones:", err);
@@ -73,7 +73,6 @@ export default function Stats({ perfil }) {
         fetchPosts();
         fetchFollowedBy();
         fetchFollows();
-        console.log(follows);
 
     }, []);
 
