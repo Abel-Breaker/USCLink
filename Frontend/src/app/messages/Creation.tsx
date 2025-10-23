@@ -7,50 +7,10 @@ import styles from "../page.module.css";
 
 export default function Messages() {
 
-  const userSesion = "Dani"; // Usuario que inicio sesión (TEMPORAL DEBUG)
-
   interface User {
     username: string;
   }
-
-
-const [newMessage, setNewMessage] = useState("");
-
-  const messagesEndRef = useRef(null);
-
-
-
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
-
-    //setMessages([...messages, { sender: { username: userSesion }, messageContent: newMessage }]);
-    //setNewMessage("");
-  };
-  
-
-  interface Message {
-    id: number;
-    chat: Chat;
-    sender: User;
-    timestamp: string;
-    messageContent: string;
-  }
-  // Message's variable
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  // Obtener lista de usuarios desde el backend
-  const fetchMessages = async (chatId: number) => {
-    try {
-      const resp = await axios.get("http://localhost:8080/messages", {
-        params: { chatId }
-      });
-      setMessages(resp.data.content);
-      console.log("Mensajes obtenidos:", resp.data.content);
-    } catch (err) {
-      console.error("Error al obtener las publicaciones:", err);
-    }
-  };
-
+  const userSesion: User = { username: "Dani" }; // Usuario que inicio sesión (TEMPORAL DEBUG)
 
   interface Chat {
     id: number;
@@ -81,6 +41,68 @@ const [newMessage, setNewMessage] = useState("");
     fetchChats();
   }, []);
 
+
+  const messagesEndRef = useRef(null);
+
+  // Send a message
+  const [newMessage, setNewMessage] = useState("");
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || !activeChat) return;
+
+    try {
+      const messageToSend: Message = {
+        chat: activeChat,          
+        sender: userSesion,      
+        messageContent: newMessage,
+      };
+
+      // Enviar al backend
+      const resp = await axios.post("http://localhost:8080/messages", messageToSend);
+
+      // Actualizar mensajes locales
+      setMessages([...messages, resp.data]);
+
+      // Limpiar input
+      setNewMessage("");
+
+    } catch (err) {
+      console.error("Error al enviar mensaje:", err);
+    }
+  };
+
+
+  interface Message {
+    id?: number;
+    chat: Chat;
+    sender: User;
+    timestamp?: string;
+    messageContent: string;
+  }
+  // Message's variable
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  // Obtener lista de usuarios desde el backend
+  const fetchMessages = async () => {
+    try {
+      const resp = await axios.get("http://localhost:8080/messages", {
+        params: { chatId: activeChat?.id }
+      });
+      setMessages(resp.data.content);
+      console.log("Mensajes obtenidos:", resp.data.content);
+    } catch (err) {
+      console.error("Error al obtener las publicaciones:", err);
+    }
+  };
+
+  // Llama a fetchMessages cuando activeChat cambie
+  useEffect(() => {
+    if (activeChat) {
+      fetchMessages();
+    }
+  }, [activeChat]);
+
+
   return (
     <div style={{ display: "flex", height: "80vh", border: "1px solid #ccc" }}>
       {/* Sidebar de conversaciones */}
@@ -106,7 +128,6 @@ const [newMessage, setNewMessage] = useState("");
               }}
               onClick={() => {
                 setActiveChat(chat);       // cambia el chat activo
-                fetchMessages(chat.id);    // llama a la función con el id del chat
               }}
 
             >
@@ -142,9 +163,9 @@ const [newMessage, setNewMessage] = useState("");
             <div
               key={idx}
               style={{
-                alignSelf: msg.sender.username === userSesion ? "flex-end" : "flex-start",
-                backgroundColor: msg.sender.username === userSesion ? "#007bff" : "#eee",
-                color: msg.sender.username === userSesion ? "white" : "black",
+                alignSelf: msg.sender.username === userSesion.username ? "flex-end" : "flex-start",
+                backgroundColor: msg.sender.username === userSesion.username ? "#007bff" : "#eee",
+                color: msg.sender.username === userSesion.username ? "white" : "black",
                 padding: "8px 12px",
                 borderRadius: "15px",
                 marginBottom: "5px",
