@@ -6,62 +6,80 @@ import axios from "axios"; // Para enviar la petición al backend
 import styles from "../page.module.css";
 
 export default function Messages() {
-  const [conversations] = useState([
-    { id: 1, name: "Ana" },
-    { id: 2, name: "Carlos" },
-    { id: 3, name: "Lucía" },
-  ]);
 
-  const [activeChat, setActiveChat] = useState(conversations[0]);
-  const [messages, setMessages] = useState([
-    { from: "Ana", text: "¡Hola! ¿Cómo estás?" },
-    { from: "Yo", text: "Todo bien 😄 ¿y tú?" },
-  ]);
-  const [newMessage, setNewMessage] = useState("");
+  const userSesion = "Dani"; // Usuario que inicio sesión (TEMPORAL DEBUG)
+
+  interface User {
+    username: string;
+  }
+
+
+const [newMessage, setNewMessage] = useState("");
 
   const messagesEndRef = useRef(null);
 
-  
+
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
 
-    setMessages([...messages, { from: "Yo", text: newMessage }]);
-    setNewMessage("");
+    //setMessages([...messages, { sender: { username: userSesion }, messageContent: newMessage }]);
+    //setNewMessage("");
   };
+  
+
+  interface Message {
+    id: number;
+    chat: Chat;
+    sender: User;
+    timestamp: string;
+    messageContent: string;
+  }
+  // Message's variable
+  const [messages, setMessages] = useState<Message[]>([]);
 
   // Obtener lista de usuarios desde el backend
-      const fetchMessages = async () => {
-          try {
-              const resp = await axios.get("http://localhost:8080/messages", {
-            params: { chatId: 1 }
-        });
-        setMessages(resp.data.content);
-        console.log("Mensajes obtenidos:", resp.data.content);
-          } catch (err) {
-              console.error("Error al obtener las publicaciones:", err);
-          }
-      };
-  
-      useEffect(() => {
-          fetchMessages();
-      }, []);
-    
-      // Obtener lista de usuarios desde el backend
-      const fetchChats= async () => {
-          try {
-              const resp = await axios.get("http://localhost:8080/chat", {
-        });
-        setMessages(resp.data.content);
-        console.log("Chats obtenidos:", resp.data.content);
-          } catch (err) {
-              console.error("Error al obtener las publicaciones:", err);
-          }
-      };
-  
-      useEffect(() => {
-          fetchChats();
-      }, []);
+  const fetchMessages = async (chatId: number) => {
+    try {
+      const resp = await axios.get("http://localhost:8080/messages", {
+        params: { chatId }
+      });
+      setMessages(resp.data.content);
+      console.log("Mensajes obtenidos:", resp.data.content);
+    } catch (err) {
+      console.error("Error al obtener las publicaciones:", err);
+    }
+  };
+
+
+  interface Chat {
+    id: number;
+    nameChat: string;
+    timestamp: string;
+    users: any[]; // TODO: Tipar Users
+  }
+
+  // Chat's variable
+  const [chats, setChats] = useState<Chat[]>([]);
+
+  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+
+  // Obtain chats from backend
+  const fetchChats = async () => {
+    try {
+      const resp = await axios.get("http://localhost:8080/chat", {
+        params: { username: userSesion }
+      });
+      setChats(resp.data.content);
+      console.log("Chats obtenidos:", resp.data.content);
+    } catch (err) {
+      console.error("Error al obtener las publicaciones:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchChats();
+  }, []);
 
   return (
     <div style={{ display: "flex", height: "80vh", border: "1px solid #ccc" }}>
@@ -76,22 +94,27 @@ export default function Messages() {
       >
         <h2>Mensajes</h2>
         <ul style={{ listStyle: "none", padding: 0 }}>
-          {conversations.map((conv) => (
+          {chats.map((chat) => (
             <li
-              key={conv.id}
+              key={chat.id}
               style={{
                 padding: "10px",
                 marginBottom: "5px",
                 cursor: "pointer",
                 backgroundColor:
-                  activeChat.id === conv.id ? "#eee" : "transparent",
+                  activeChat?.id === chat.id ? "#eee" : "transparent",
               }}
-              onClick={() => setActiveChat(conv)}
+              onClick={() => {
+                setActiveChat(chat);       // cambia el chat activo
+                fetchMessages(chat.id);    // llama a la función con el id del chat
+              }}
+
             >
-              {conv.name}
+              {chat.nameChat || "Chat sin nombre"}
             </li>
           ))}
         </ul>
+
       </div>
 
       {/* Chat principal */}
@@ -103,7 +126,7 @@ export default function Messages() {
             fontWeight: "bold",
           }}
         >
-          {activeChat.name}
+          {activeChat?.nameChat || ""}
         </div>
 
         <div
@@ -119,16 +142,16 @@ export default function Messages() {
             <div
               key={idx}
               style={{
-                alignSelf: msg.from === "Yo" ? "flex-end" : "flex-start",
-                backgroundColor: msg.from === "Yo" ? "#007bff" : "#eee",
-                color: msg.from === "Yo" ? "white" : "black",
+                alignSelf: msg.sender.username === userSesion ? "flex-end" : "flex-start",
+                backgroundColor: msg.sender.username === userSesion ? "#007bff" : "#eee",
+                color: msg.sender.username === userSesion ? "white" : "black",
                 padding: "8px 12px",
                 borderRadius: "15px",
                 marginBottom: "5px",
                 maxWidth: "70%",
               }}
             >
-              {msg.text}
+              {msg.messageContent}
             </div>
           ))}
           <div ref={messagesEndRef} />

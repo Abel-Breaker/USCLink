@@ -40,7 +40,7 @@ public class Message {
         this.timestamp = java.time.Instant.now().toString();
     }
 
-    public Chat getchatId() 
+    public Chat getChatId() 
     {
         return chatId;
     }

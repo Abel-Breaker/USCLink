@@ -54,8 +54,12 @@ public class Chat {
     {
         return id;
     }
-    public List<User> getUsers() 
-    {
+
+    public String getNameChat() {
+        return nameChat;
+    }
+
+    public List<User> getUsers() {
         return users;
     }
     public String getTimestamp()
