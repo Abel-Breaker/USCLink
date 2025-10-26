@@ -1,25 +1,14 @@
 package USCLink.USCLink.service;
 
-import USCLink.USCLink.model.Post;
-import USCLink.USCLink.model.User;
+
 import USCLink.USCLink.model.Message;
-import USCLink.USCLink.repository.PostRepository;
-import USCLink.USCLink.repository.UserRepository;
 import USCLink.USCLink.repository.MessagesRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
 
 @Service
 public class MessagesService {
@@ -33,6 +22,10 @@ public class MessagesService {
 
     public Page<Message> getMessagesByChatId(Long chatId, Pageable pageable) {
         return messageRepository.findByChatId_Id(chatId, pageable);
+    }
+
+    public void sendMessage(Message message) {
+        messageRepository.save(message);
     }
     
 }

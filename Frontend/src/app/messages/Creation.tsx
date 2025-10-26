@@ -51,11 +51,13 @@ export default function Messages() {
     if (!newMessage.trim() || !activeChat) return;
 
     try {
+      // Ojo, no estas pasando todos los atributos de los objetos (chat, sender), pero sí los necesarios para la base datos
       const messageToSend: Message = {
-        chat: activeChat,          
-        sender: userSesion,      
+        chat: activeChat,
+        sender: userSesion,
         messageContent: newMessage,
       };
+      
 
       // Enviar al backend
       const resp = await axios.post("http://localhost:8080/messages", messageToSend);

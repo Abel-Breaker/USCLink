@@ -17,7 +17,7 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "chat_id", referencedColumnName = "id")
-    private Chat chatId;
+    private Chat chat;
 
     @ManyToOne
     @JoinColumn(name = "user_username", referencedColumnName = "username")
@@ -40,9 +40,17 @@ public class Message {
         this.timestamp = java.time.Instant.now().toString();
     }
 
-    public Chat getChatId() 
+    public Message(Chat chat, User sender, String messageContent) 
     {
-        return chatId;
+        this.chat = chat;
+        this.sender = sender;
+        this.messageContent = messageContent;
+        this.timestamp = java.time.Instant.now().toString();
+    }
+
+    public Chat getChat() 
+    {
+        return chat;
     }
     public User getSender() 
     {
@@ -56,5 +64,22 @@ public class Message {
     {
         return timestamp;
     }
-    
+
+    public void setChat(Chat chat) 
+    {
+        this.chat = chat;
+    }
+    public void setSender(User sender) 
+    {
+        this.sender = sender;   
+
+    }
+    public void setMessageContent(String messageContent) 
+    {
+        this.messageContent = messageContent;
+    }
+    public void setTimestamp(String timestamp)
+    {
+        this.timestamp = timestamp;
+    }
 }

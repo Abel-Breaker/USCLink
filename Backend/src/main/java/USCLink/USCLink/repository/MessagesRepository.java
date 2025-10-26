@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
-public interface MessagesRepository extends PagingAndSortingRepository<Message, Long> {
+public interface MessagesRepository extends CrudRepository<Message, Long> {
 
     // Obtener todos los mensajes de un chat
     Page<Message> findByChatId_Id(Long chatId, Pageable pageable);

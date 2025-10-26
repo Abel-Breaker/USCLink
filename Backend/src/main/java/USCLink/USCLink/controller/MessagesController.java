@@ -1,8 +1,12 @@
 package USCLink.USCLink.controller;
 
+import USCLink.USCLink.model.Chat;
 import USCLink.USCLink.model.Comment;
 import USCLink.USCLink.model.Message;
 import USCLink.USCLink.model.User;
+import USCLink.USCLink.repository.ChatRepository;
+import USCLink.USCLink.repository.MessagesRepository;
+import USCLink.USCLink.repository.UserRepository;
 import USCLink.USCLink.service.CommentService;
 import USCLink.USCLink.service.PostService;
 import USCLink.USCLink.service.UserService;
@@ -21,6 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -47,6 +52,15 @@ public class MessagesController {
                 chatId,
                 PageRequest.of(page, size, Sort.by(sort).ascending())
         );
+    }
+
+    @PostMapping
+    public ResponseEntity<Message> sendMessage(@RequestBody Message message) {
+
+        message.setTimestamp(Instant.now().toString());
+
+        messageService.sendMessage(message);
+        return ResponseEntity.ok(message);
     }
 
 }
