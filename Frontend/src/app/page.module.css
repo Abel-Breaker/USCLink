@@ -1,11 +1,4 @@
-:root {
-  --bg: #ffffffc1;
-  --card: #ffffff;
-  --muted: #21303c;
-  --text: #0f1721;
-  --border: #e1e8ed;
-  --accent: #1d9bf0;
-}
+@import url('globals.css');
 
 html,
 body {
@@ -20,7 +13,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   justify-content: center;
 }
-
 /* Tarjeta de perfil */
 .profile-container {
   width: min(1100px, 96vw);
@@ -44,33 +36,34 @@ body {
 }
 
 .profile-header ul {
-  list-style: none;      /* quitar viñetas */
-  display: flex;         /* alinear en fila */
-  align-items: center;   /* centrar verticalmente */
-  gap: 15px;             /* espacio entre avatar y texto */
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 15px;
   margin: 0;
   padding: 0;
 }
 
-.profile-header li {
-  margin: 0;
-}
+.profile-header li { margin: 0; }
 
 .profile-header img {
-  border-radius: 50%;    /* redondear imagen */
+  border-radius: 50%;
   width: 100px;
   height: 100px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.06);
 }
 
 .profile-header h2 {
   margin: 0;
-  font-size: 33px;
+  font-size: var(--font-xl);
+  color: var(--text);
 }
 
 .profile-header p {
-  font-size: 20px;
+  font-size: var(--font-md);
   margin: 2px 0;
-  color: #555;
+  color: var(--muted);
 }
 
 /* Estadísticas */
@@ -83,16 +76,8 @@ body {
   font-size: var(--font-md);
 }
 
-.stats span {
-  color: var(--muted);
-  text-align: center;
-}
-
-.stats strong {
-  display: block;
-  font-size: 18px;
-  color: var(--text);
-}
+.stats span { color: var(--muted); text-align: center; }
+.stats strong { display: block; font-size: 18px; color: var(--text); }
 
 /* Tweets / posts */
 .tweet {
@@ -117,10 +102,9 @@ body {
 .tweet-text {
   color: var(--text);
   font-size: 17px;
-  /* ligeramente mayor que base */
 }
 
-/* Footer local (usado en page.tsx como styles.footer) */
+/* Footer local */
 .footer {
   margin-top: 20px;
   padding: 14px;
@@ -134,7 +118,6 @@ body {
   font-size: var(--font-sm);
 }
 
-/* Enlaces del footer */
 .footer a {
   color: var(--muted);
   text-decoration: none;
@@ -146,6 +129,20 @@ body {
 }
 
 .footer a:hover {
-  background: rgba(29, 155, 240, 0.06);
+  background: rgba(31, 95, 150, 0.08);
   color: var(--accent);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .profile-header img { width: 92px; height: 92px; }
+  .profile-container { margin: 0 8px; }
+}
+
+@media (max-width: 480px) {
+  .profile-header { gap: 12px; padding: 12px; }
+  .profile-header img { width: 84px; height: 84px; }
+  .profile-header h2 { font-size: var(--font-lg); }
+  .tweet-text { font-size: 14px; }
+  .profile-container { margin: 0 8px; }
 }

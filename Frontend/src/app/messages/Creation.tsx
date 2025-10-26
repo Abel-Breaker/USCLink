@@ -175,7 +175,7 @@ export default function Messages() {
                 maxWidth: "70%",
               }}
             >
-              {msg.messageContent}
+              {msg.sender.username + ": " + msg.messageContent}
             </div>
           ))}
           <div ref={messagesEndRef} />

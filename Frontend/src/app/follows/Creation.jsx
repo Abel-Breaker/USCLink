@@ -89,7 +89,7 @@ export default function CreateFollowForm() {
                     name="user1"
                     placeholder="Nombre de usuario 1"
                     className={styles["tweet-input"]}
-                    value={formData.user}
+                    value={formData.user1}
                     onChange={handleChange}
                 />
                 <input
@@ -97,7 +97,7 @@ export default function CreateFollowForm() {
                     name="user2"
                     placeholder="Nombre de usuario 2"
                     className={styles["tweet-input"]}
-                    value={formData.user}
+                    value={formData.user2}
                     onChange={handleChange}
                 />
                 <button type="submit" className={styles["tweet-button"]}>
@@ -134,14 +134,31 @@ export default function CreateFollowForm() {
                             </tr>
                         </thead>
                         <tbody>
-                            {follows.map((u, idx) => (
-                                <tr key={u.id ?? idx}>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.id ?? "-"}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.user1.username ?? "-"}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.user2.username ?? "-"}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>{u.timeStamp ?? "-"}</td>
-                                </tr>
-                            ))}
+                            {follows.map((u, idx) => {
+                                const key =
+                                  u?.id?.user1Username && u?.id?.user2Username
+                                    ? `${u.id.user1Username}-${u.id.user2Username}`
+                                    : (u.id ? JSON.stringify(u.id) : idx);
+
+                                return (
+                                  <tr key={key}>
+                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>
+                                      {u.id?.user1Username
+                                        ? `${u.id.user1Username}→${u.id.user2Username}`
+                                        : (u.id ?? "-")}
+                                    </td>
+                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>
+                                      {u.user1?.username ?? "-"}
+                                    </td>
+                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>
+                                      {u.user2?.username ?? "-"}
+                                    </td>
+                                    <td style={{ padding: "8px", borderBottom: "1px solid #f0f0f0" }}>
+                                      {u.timestamp ?? u.timeStamp ?? "-"}
+                                    </td>
+                                  </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
