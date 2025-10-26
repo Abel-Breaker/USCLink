@@ -33,7 +33,7 @@ public class FollowController {
         this.followService = followService;
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<Page<Follow>> getFollows(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
@@ -60,7 +60,7 @@ public class FollowController {
         }
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Follow> addFollow(@RequestBody Follow follow) {
         try {
             follow = followService.createFollow(follow.getUser1(), follow.getUser2());

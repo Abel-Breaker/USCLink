@@ -25,7 +25,7 @@ export default function CreateCommentForm() {
     const fetchComments = async () => {
         try {
             setLoadingComments(true);
-            const resp = await axios.get("http://localhost:8080/comments/");
+            const resp = await axios.get("http://localhost:8080/comments");
             console.log("Comments obtenidos:", resp.data.content);
             setComments(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -55,7 +55,7 @@ export default function CreateCommentForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/comments/", // URL del backend
+                "http://localhost:8080/comments", // URL del backend
                 {
                     user: {
                         username: formData.user, // Aquí podría ser más info si lo tienes

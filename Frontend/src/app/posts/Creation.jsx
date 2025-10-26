@@ -24,7 +24,7 @@ export default function CreatePostsForm() {
     const fetchPosts = async () => {
         try {
             setLoadingPosts(true);
-            const resp = await axios.get("http://localhost:8080/posts/");
+            const resp = await axios.get("http://localhost:8080/posts");
             console.log("Publicaciones obtenidas:", resp.data.content);
             setPosts(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -61,7 +61,7 @@ export default function CreatePostsForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/posts/", // URL del backend
+                "http://localhost:8080/posts", // URL del backend
                 formDataToSend,
                 {
                     headers: { "Content-Type": "multipart/form-data" }

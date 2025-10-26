@@ -34,7 +34,7 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<Page<Comment>> getComments(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
             @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort
@@ -52,7 +52,7 @@ public class CommentController {
         }
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Comment> addComment(@RequestBody Comment comment) {
         try{
             comment = commentService.createComment(comment.getUser(), comment.getPost(), comment.getContent());

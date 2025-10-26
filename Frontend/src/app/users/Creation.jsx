@@ -25,7 +25,7 @@ export default function CreateUserForm() {
     const fetchUsers = async () => {
         try {
             setLoadingUsers(true);
-            const resp = await axios.get("http://localhost:8080/users/"); 
+            const resp = await axios.get("http://localhost:8080/users"); 
             console.log("Usuarios obtenidos:", resp.data.content);
             setUsers(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -60,7 +60,7 @@ export default function CreateUserForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/users/", // URL del backend
+                "http://localhost:8080/users", // URL del backend
                 dataToSend
             );
             setCreatedUser(response.data);

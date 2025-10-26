@@ -24,7 +24,7 @@ export default function CreateFollowForm() {
     const fetchFollows = async () => {
         try {
             setLoadingFollows(true);
-            const resp = await axios.get("http://localhost:8080/follows/");
+            const resp = await axios.get("http://localhost:8080/follows");
             console.log("Follows obtenidos:", resp.data.content);
             setFollows(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -54,7 +54,7 @@ export default function CreateFollowForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/follows/", // URL del backend
+                "http://localhost:8080/follows", // URL del backend
                 {
                     user1: {
                         username: formData.user1, // Aquí podría ser más info si lo tienes

@@ -18,7 +18,7 @@ export default function Posts({ perfil }) {
         }
         try {
             setLoadingPosts(true);
-            const resp = await axios.get("http://localhost:8080/posts/", {
+            const resp = await axios.get("http://localhost:8080/posts", {
                 params: { followedBy: perfil },
                 // timeout: 5000, // opcional
             });

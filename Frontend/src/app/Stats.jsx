@@ -20,7 +20,7 @@ export default function Stats({ perfil }) {
             return;
         }
         try {
-            const resp = await axios.get("http://localhost:8080/posts/", {
+            const resp = await axios.get("http://localhost:8080/posts", {
                 params: { perfil: perfil },
                 // timeout: 5000, // opcional
             });
@@ -39,7 +39,7 @@ export default function Stats({ perfil }) {
             return;
         }
         try {
-            const resp = await axios.get("http://localhost:8080/follows/", {
+            const resp = await axios.get("http://localhost:8080/follows", {
                 params: { followed: perfil },
                 // timeout: 5000, // opcional
             });
@@ -58,7 +58,7 @@ export default function Stats({ perfil }) {
             return;
         }
         try {
-            const resp = await axios.get("http://localhost:8080/follows/", {
+            const resp = await axios.get("http://localhost:8080/follows", {
                 params: { followedBy: perfil },
                 // timeout: 5000, // opcional
             });

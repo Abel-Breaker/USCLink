@@ -35,7 +35,7 @@ class UserController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<Page<User>> getUsers(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
             @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort
@@ -46,7 +46,7 @@ class UserController {
 
 
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<User> addUser(@RequestBody User user) {
         try{
             user = userService.createUser(user);

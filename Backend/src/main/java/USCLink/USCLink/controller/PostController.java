@@ -33,7 +33,7 @@ public class PostController {
     }
 
     // Endpoint para subir archivo
-    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadFile(@RequestPart("user") User user, @RequestPart("file") MultipartFile file) {
         try {
 
@@ -61,7 +61,7 @@ public class PostController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<Page<Post>> getPosts(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
