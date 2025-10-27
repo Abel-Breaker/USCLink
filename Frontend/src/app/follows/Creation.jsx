@@ -57,10 +57,10 @@ export default function CreateFollowForm() {
                 "http://localhost:8080/follows", // URL del backend
                 {
                     user1: {
-                        username: formData.user1, // Aquí podría ser más info si lo tienes
+                        username: formData.user1, 
                     },
                     user2: {
-                        username: formData.user2, // Aquí podría ser más info si lo tienes
+                        username: formData.user2,
                     },
                 },
                 {
@@ -68,7 +68,7 @@ export default function CreateFollowForm() {
                 }
             );
             setCreatedFollow(response.data);
-
+            console.log("Follow creado:", response.data);
             // Limpiar formulario
             setFormData({ user1: "", user2: ""});
 

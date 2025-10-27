@@ -23,6 +23,7 @@ public class Follow {
     @ManyToOne
     @JoinColumn(name = "user2_username", referencedColumnName = "username")
     private User user2; // ID of the user who made the comment
+    
     @Column(nullable = false)
     private String timestamp; // Timestamp of when the comment was made
 

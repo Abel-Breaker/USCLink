@@ -34,7 +34,7 @@ public class PostController {
 
     // Endpoint para subir archivo
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> uploadFile(@RequestPart("user") User user, @RequestPart("file") MultipartFile file) {
+    public ResponseEntity<String> uploadFile(@RequestPart("user") User user, @RequestPart("file") MultipartFile file, @RequestPart(value = "caption", required = false) String caption) {
         try {
 
             if (file.isEmpty()) {
@@ -42,7 +42,7 @@ public class PostController {
             }
 
             // Create a new Post
-            Post newPost = this.postService.createPost(user, file.getOriginalFilename());
+            Post newPost = this.postService.createPost(user, file.getOriginalFilename(), caption);
 
             // Crear el archivo y su carpeta padre si no existen
             String uploadsDir = newPost.getPathToFile(); // Ruta en el frontend para que pueda acceder a la imagen

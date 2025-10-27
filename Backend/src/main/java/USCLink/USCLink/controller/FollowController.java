@@ -52,9 +52,10 @@ public class FollowController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Follow> getFollow(@PathVariable("id") FollowId id) {
+    public ResponseEntity<Follow> getFollow(@PathVariable("user1") String user1,
+            @PathVariable("user2") String user2) {
         try {
-            return ResponseEntity.ok(followService.getCoincidentFollowsById(id).iterator().next());
+            return ResponseEntity.ok(followService.getCoincidentFollowsById(new FollowId(user1,user2)).iterator().next());
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
@@ -66,8 +67,11 @@ public class FollowController {
             follow = followService.createFollow(follow.getUser1(), follow.getUser2());
             System.out.println("Comment created: " + follow.getId());
 
+            String user1 = follow.getId().getUser1Username();
+            String user2 = follow.getId().getUser2Username();
+
             return ResponseEntity
-                    .created(MvcUriComponentsBuilder.fromMethodName(FollowController.class, "getFollow", follow.getId())
+                    .created(MvcUriComponentsBuilder.fromMethodName(FollowController.class, "getFollow", user1, user2)
                             .build().toUri())
                     .body(follow);
         } catch (Exception e) {
@@ -75,7 +79,7 @@ public class FollowController {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .location(MvcUriComponentsBuilder
-                            .fromMethodName(FollowController.class, "getFollow", follow.getId()).build().toUri())
+                            .fromMethodName(FollowController.class, "getFollow", follow.getId().getUser1Username(), follow.getId().getUser2Username()).build().toUri())
                     .build();
         }
     }

@@ -21,8 +21,8 @@ public class PostService {
     @Autowired
     private PostRepository postRepository;
 
-    public Post createPost(User user, String fileName) {
-        Post post = new Post(user, fileName);
+    public Post createPost(User user, String fileName, String caption) {
+        Post post = new Post(user, fileName, caption);
         System.out.println("Creating post for user: " + user.getUsername() + ", file: " + fileName);
         return postRepository.save(post);
     }
