@@ -1,5 +1,7 @@
 package USCLink.USCLink.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +21,8 @@ public class User {
     private String email;
     @Column(nullable = false, unique = true)
     private Long telephone;
+    @Column(nullable = false, unique = true)
+    private String avatar;
 
     public User() {
     }
@@ -26,10 +30,12 @@ public class User {
     public User(
             String username,
             String email,
-            Long telephone) {
+            Long telephone,
+            String fileName) {
         this.username = username;
         this.email = email;
         this.telephone = telephone;
+        this.avatar = "./uploads/" + username + "/avatar/" + UUID.randomUUID().toString() + "_" + fileName;
     }
 
     public String getUsername() {
@@ -42,6 +48,10 @@ public class User {
 
     public Long getTelephone() {
         return telephone;
+    }
+    
+    public String getAvatar() {
+        return avatar;
     }
 
     @Override

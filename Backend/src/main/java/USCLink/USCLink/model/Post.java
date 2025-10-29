@@ -26,8 +26,6 @@ public class Post
     @Column(nullable = false)
     private String timestamp; // Timestamp of when the message was sent
 
-    //TODO: Agregar fecha de creación y contenido de texto
-
     public Post() {}
 
     public Post(User user, String fileName, String caption)

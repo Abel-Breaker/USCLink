@@ -10,13 +10,13 @@ export default function Messages() {
   interface User {
     username: string;
   }
-  const userSesion: User = { username: "Dani" }; // Usuario que inicio sesión (TEMPORAL DEBUG)
+  const userSesion: User = { username: "Dani" }; // Usuario que inicio sesión (TODO: TEMPORAL DEBUG)
 
   interface Chat {
     id: number;
     nameChat: string;
     timestamp: string;
-    users: any[]; // TODO: Tipar Users
+    users: any[];
   }
 
   // Chat's variable

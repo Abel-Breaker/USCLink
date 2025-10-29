@@ -10,6 +10,7 @@ export default function CreateUserForm() {
         username: "",
         email: "",
         telephone: 0,
+        avatar: "",
     });
 
     // Nuevo estado para guardar la respuesta del servicio y errores
@@ -41,27 +42,29 @@ export default function CreateUserForm() {
 
     // Función para actualizar el estado cuando el usuario escribe
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value, files } = e.target;
+        if (name === "avatar") {
+            setFormData({ ...formData, avatar: files[0] }); // guarda el archivo
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     // Función que se ejecuta al enviar el formulario
     const handleSubmit = async (e) => {
         e.preventDefault(); // Evita que la página se recargue
-        const dataToSend = {
-            ...formData,
-            telephone: Number(formData.telephone) // convierte a número
-        };
-        console.log("Enviando datos:", dataToSend);
+        const formDataToSend = new FormData();
+        formDataToSend.append("username", formData.username);
+        formDataToSend.append("email", formData.email);
+        formDataToSend.append("telephone", String(formData.telephone));
+        formDataToSend.append("avatar", formData.avatar);
 
         try {
             setLoading(true);
             setError(null);
             const response = await axios.post(
                 "http://localhost:8080/users", // URL del backend
-                dataToSend
+                formDataToSend
             );
             setCreatedUser(response.data);
             if (response.data) {
@@ -72,7 +75,7 @@ export default function CreateUserForm() {
             }
 
             // Limpiar formulario
-            setFormData({ username: "", email: "", telephone: "" });
+            setFormData({ username: "", email: "", telephone: "", avatar: "" });
             
         } catch (error) {
             console.error("Error al crear usuario:", error);
@@ -108,6 +111,12 @@ export default function CreateUserForm() {
                     placeholder="Teléfono"
                     className={styles["tweet-input"]}
                     value={formData.telephone}
+                    onChange={handleChange}
+                />
+                <input
+                    type="file"
+                    name="avatar"
+                    className={styles["tweet-input"]}
                     onChange={handleChange}
                 />
                 <button type="submit" className={styles["tweet-button"]}>
