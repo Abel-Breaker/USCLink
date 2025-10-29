@@ -17,7 +17,7 @@ export default function Messages() {
     id: number;
     nameChat: string;
     timestamp: string;
-    users: any[]; // TODO: Tipar Users
+    users: User[];
   }
 
   interface Message {
@@ -29,7 +29,7 @@ export default function Messages() {
   }
 
   /////// USER SESSION (TEMPORAL) ///////
-  const userSesion: User = { username: "Dani" }; // Usuario que inicio sesión (TEMPORAL DEBUG)
+  const userSesion: User = { username: "Abel" }; // Usuario que inicio sesión (TEMPORAL DEBUG)
 
 
   /////// VARIABLES ///////
@@ -45,7 +45,7 @@ export default function Messages() {
   const fetchChats = async () => {
     try {
       const resp = await axios.get("http://localhost:8080/chat", {
-        params: { username: userSesion }
+        params: { username: userSesion.username } // TODO: Que pase el usuario entero? No solo el username (Ns si hará falta)
       });
       setChats(resp.data.content);
       console.log("Chats obtenidos:", resp.data.content);

@@ -11,21 +11,21 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/chat")
 public class ChatController {
-    
+
     @Autowired
     ChatService chatService;
 
-    
     public ChatController(ChatService chatService) {
         this.chatService = chatService;
     }
 
     @GetMapping
     public Page<Chat> getChats(
+            @RequestParam String username,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        return chatService.getAllChats(PageRequest.of(page, size));
+        return chatService.getAllChatsFromUser(username, PageRequest.of(page, size));
     }
 
 }
