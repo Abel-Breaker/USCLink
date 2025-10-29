@@ -1,6 +1,8 @@
 package USCLink.USCLink.service;
 
+import USCLink.USCLink.exception.DuplicatedUserException;
 import USCLink.USCLink.model.User;
+import USCLink.USCLink.controller.ErrorController;
 import USCLink.USCLink.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -15,13 +17,14 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User createUser(User user) throws IllegalArgumentException {
+    public User createUser(User user) throws DuplicatedUserException {
         User newUser = user;
         if (!userExist(newUser.getUsername())) {
             System.out.println("Creating user: " + user.getUsername() + ", " + user.getEmail() + ", " + user.getTelephone());
             return userRepository.save(user);
         } else {
-            throw new IllegalArgumentException("El usuario ya existe: " + user.getUsername());
+            System.out.println("User already exists: " + user.getUsername());
+            throw new DuplicatedUserException(user);
         }
     }
 

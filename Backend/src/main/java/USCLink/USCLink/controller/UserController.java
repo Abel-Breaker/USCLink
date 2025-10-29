@@ -1,5 +1,6 @@
 package USCLink.USCLink.controller;
 
+import USCLink.USCLink.exception.DuplicatedUserException;
 import USCLink.USCLink.model.User;
 import USCLink.USCLink.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ class UserController {
 
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<User> addUser(@RequestParam("username") String username, @RequestParam("email") String email, @RequestParam("telephone") Long telephone, @RequestParam("avatar") MultipartFile avatar) {
+    public ResponseEntity<User> addUser(@RequestParam("username") String username, @RequestParam("email") String email, @RequestParam("telephone") Long telephone, @RequestParam("avatar") MultipartFile avatar) throws DuplicatedUserException {
         try{
             User userObj = new User(username, email, telephone, avatar.getOriginalFilename());
             userObj = userService.createUser(userObj);
@@ -66,7 +67,7 @@ class UserController {
             return ResponseEntity
                     .created(MvcUriComponentsBuilder.fromMethodName(UserController.class, "getUser", userObj.getUsername()).build().toUri())
                     .body(userObj);
-        } catch (Exception e) {
+        }catch (Exception e) {
             System.out.println("Error creating user: " + e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)

@@ -17,7 +17,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     Page<Post> findAll(Pageable pageRequest);
 
     // Buscar posts por los seguidores de un usuario
-    @Query("SELECT p FROM Post p WHERE p.user.username IN (SELECT f.user2.username FROM Follow f WHERE f.user1.username = ?1)")
+    @Query("SELECT p FROM Post p WHERE p.user.username IN (SELECT f.user2.username FROM Follow f WHERE f.user1.username = ?1) OR p.user.username = ?1 ")
     Page<Post> findPostsByUserFollowersUsername(String username, Pageable pageRequest);
 
     // Buscar posts por el username del usuario

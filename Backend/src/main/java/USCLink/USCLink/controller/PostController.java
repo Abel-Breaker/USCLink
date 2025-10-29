@@ -66,14 +66,14 @@ public class PostController {
             @RequestParam(value = "perfil", required = false, defaultValue = "") User perfil){
         if (!followedBy.isEmpty()) {
             return ResponseEntity.ok(postService.getPostsFollowedByUser(followedBy, PageRequest.of(page, pagesize,
-                    Sort.by("id"))));
+                    Sort.by("timestamp").descending())));
         }
         if (perfil != null) {
             return ResponseEntity.ok(postService.getPostsByUserUsername(perfil, PageRequest.of(page, pagesize,
-                    Sort.by("id"))));
+                    Sort.by("timestamp").descending())));
             
         }
         return ResponseEntity.ok(postService.getPosts(PageRequest.of(page, pagesize,
-                Sort.by("id"))));
+                Sort.by("timestamp").descending())));
     }
 }
