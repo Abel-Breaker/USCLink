@@ -17,8 +17,8 @@ public class ChatService {
         this.chatRepository = chatRepository;
     }
 
-    public Page<Chat> getAllChats(Pageable pageable) {
-        return chatRepository.findAll(pageable);
+    public Page<Chat> getAllChatsFromUser(String username, Pageable pageable) {
+        return chatRepository.findByUsers_Username(username, pageable);
     }
     
 }
