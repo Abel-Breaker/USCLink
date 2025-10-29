@@ -1,9 +1,6 @@
 package USCLink.USCLink.model;
 
-import java.util.UUID;
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity

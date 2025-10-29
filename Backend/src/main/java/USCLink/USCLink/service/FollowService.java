@@ -1,15 +1,8 @@
 package USCLink.USCLink.service;
-
-import USCLink.USCLink.model.Comment;
 import USCLink.USCLink.model.Follow;
 import USCLink.USCLink.model.FollowId;
 import USCLink.USCLink.model.User;
 import USCLink.USCLink.repository.FollowRepository;
-import USCLink.USCLink.repository.UserRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

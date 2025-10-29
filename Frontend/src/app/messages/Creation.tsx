@@ -3,26 +3,43 @@
 // Messages.jsx
 import { useState, useRef, useEffect } from "react";
 import axios from "axios"; // Para enviar la petición al backend
-import styles from "../page.module.css";
+import styles from "./Messages.module.css";
 
 export default function Messages() {
+
+  /////// INTERFACES ///////
 
   interface User {
     username: string;
   }
-  const userSesion: User = { username: "Dani" }; // Usuario que inicio sesión (TODO: TEMPORAL DEBUG)
 
   interface Chat {
     id: number;
     nameChat: string;
     timestamp: string;
-    users: any[];
+    users: any[]; // TODO: Tipar Users
   }
 
-  // Chat's variable
-  const [chats, setChats] = useState<Chat[]>([]);
+  interface Message {
+    id?: number;
+    chat: Chat;
+    sender: User;
+    timestamp?: string;
+    messageContent: string;
+  }
 
+  /////// USER SESSION (TEMPORAL) ///////
+  const userSesion: User = { username: "Dani" }; // Usuario que inicio sesión (TEMPORAL DEBUG)
+
+
+  /////// VARIABLES ///////
+  const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [newMessage, setNewMessage] = useState(""); // Send a message
+  const [messages, setMessages] = useState<Message[]>([]); // Message's variable
+  const messagesEndRef = useRef(null);
+
+  /////// FUNCTIONS ///////
 
   // Obtain chats from backend
   const fetchChats = async () => {
@@ -37,16 +54,7 @@ export default function Messages() {
     }
   };
 
-  useEffect(() => {
-    fetchChats();
-  }, []);
-
-
-  const messagesEndRef = useRef(null);
-
-  // Send a message
-  const [newMessage, setNewMessage] = useState("");
-
+  // Send a message to backend
   const handleSend = async () => {
     if (!newMessage.trim() || !activeChat) return;
 
@@ -59,33 +67,22 @@ export default function Messages() {
         sender: userSesion,
         messageContent: newMessage,
       };
-      
-      // Enviar al backend
+
+      // Send to backend (and respond with the created message)
       const resp = await axios.post("http://localhost:8080/messages", messageToSend);
 
-      // Actualizar mensajes locales
+      // Update local messages
       setMessages([...messages, resp.data]);
 
-      // Limpiar input
+      // Clean input
       setNewMessage("");
 
     } catch (err) {
-      console.error("Error al enviar mensaje:", err);
+      console.error("Error sending message:", err);
     }
   };
 
-
-  interface Message {
-    id?: number;
-    chat: Chat;
-    sender: User;
-    timestamp?: string;
-    messageContent: string;
-  }
-  // Message's variable
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  // Obtener lista de usuarios desde el backend
+  // Get list of messages from the backend
   const fetchMessages = async () => {
     try {
       const resp = await axios.get("http://localhost:8080/messages", {
@@ -98,6 +95,13 @@ export default function Messages() {
     }
   };
 
+
+  /////// FUNCTIONS CALLS (UseEffects) ///////
+
+  useEffect(() => {
+    fetchChats();
+  }, []);
+
   // Llama a fetchMessages cuando activeChat cambie
   useEffect(() => {
     if (activeChat) {
@@ -107,111 +111,58 @@ export default function Messages() {
 
 
   return (
-    <div style={{ display: "flex", height: "80vh", border: "1px solid #ccc" }}>
+    <div className={styles.container}>
       {/* Sidebar de conversaciones */}
-      <div
-        style={{
-          width: "25%",
-          borderRight: "1px solid #ccc",
-          padding: "10px",
-          overflowY: "auto",
-        }}
-      >
-        <h2>Mensajes</h2>
-        <ul style={{ listStyle: "none", padding: 0 }}>
+      <aside className={styles.sidebar}>
+        <h2 className={styles.title}>Mensajes</h2>
+        <ul className={styles.chatList}>
           {chats.map((chat) => (
             <li
               key={chat.id}
-              style={{
-                padding: "10px",
-                marginBottom: "5px",
-                cursor: "pointer",
-                backgroundColor:
-                  activeChat?.id === chat.id ? "#eee" : "transparent",
-              }}
-              onClick={() => {
-                setActiveChat(chat);       // cambia el chat activo
-              }}
-
+              className={`${styles.chatItem} ${activeChat?.id === chat.id ? styles.activeChat : ""}`}
+              onClick={() => setActiveChat(chat)}
             >
               {chat.nameChat || "Chat sin nombre"}
             </li>
           ))}
         </ul>
+      </aside>
 
-      </div>
-
-      {/* Chat principal */}
-      <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-        <div
-          style={{
-            padding: "10px",
-            borderBottom: "1px solid #ccc",
-            fontWeight: "bold",
-          }}
-        >
+      {/* Ventana principal del chat */}
+      <main className={styles.chatWindow}>
+        <header className={styles.chatHeader}>
           {activeChat?.nameChat || ""}
-        </div>
+        </header>
 
-        <div
-          style={{
-            flexGrow: 1,
-            padding: "10px",
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
+        <section className={styles.messageList}>
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              style={{
-                alignSelf: msg.sender.username === userSesion.username ? "flex-end" : "flex-start",
-                backgroundColor: msg.sender.username === userSesion.username ? "#007bff" : "#eee",
-                color: msg.sender.username === userSesion.username ? "white" : "black",
-                padding: "8px 12px",
-                borderRadius: "15px",
-                marginBottom: "5px",
-                maxWidth: "70%",
-              }}
+              className={`${styles.messageBubble} ${msg.sender.username === userSesion.username
+                  ? styles.messageSent
+                  : styles.messageReceived
+                }`}
             >
               {msg.sender.username + ": " + msg.messageContent}
             </div>
           ))}
           <div ref={messagesEndRef} />
-        </div>
+        </section>
 
-        {/* Input de mensaje */}
-        <div style={{ display: "flex", padding: "10px", borderTop: "1px solid #ccc" }}>
+        <footer className={styles.inputArea}>
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Escribe un mensaje..."
-            style={{
-              flexGrow: 1,
-              padding: "8px",
-              borderRadius: "15px",
-              border: "1px solid #ccc",
-            }}
+            className={styles.input}
           />
-          <button
-            onClick={handleSend}
-            style={{
-              marginLeft: "10px",
-              padding: "8px 16px",
-              borderRadius: "15px",
-              border: "none",
-              backgroundColor: "#007bff",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={handleSend} className={styles.sendButton}>
             Enviar
           </button>
-        </div>
-      </div>
+        </footer>
+      </main>
     </div>
   );
 }
