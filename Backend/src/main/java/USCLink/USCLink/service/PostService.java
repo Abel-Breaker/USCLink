@@ -32,4 +32,12 @@ public class PostService {
         return postRepository.findAllByUser(user, pageRequest);
     }
     
+    public void likePost(Long post, User user) {
+        Post existingPost = postRepository.findById(post).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        System.out.println(existingPost.getLikes());
+        if (!existingPost.getLikes().contains(user)) {
+            existingPost.getLikes().add(user);
+            postRepository.save(existingPost);
+        }
+    }
 }

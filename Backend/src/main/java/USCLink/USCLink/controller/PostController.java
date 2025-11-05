@@ -16,6 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RestController
 @RequestMapping("/posts")
@@ -76,4 +79,12 @@ public class PostController {
         return ResponseEntity.ok(postService.getPosts(PageRequest.of(page, pagesize,
                 Sort.by("timestamp").descending())));
     }
+
+    @PostMapping("/{id}/likes")
+    public ResponseEntity<String> likePost(@PathVariable("id") Long post, @RequestBody User user) {
+        System.out.println("User " + user.getUsername() + " is liking post ID " + post);
+        this.postService.likePost(post, user);
+        return ResponseEntity.ok("Post liked successfully.");
+    }
+    
 }

@@ -91,7 +91,27 @@ export default function Posts({ perfil }) {
                             </div>
 
                             {/* contenido: ocupa el resto y permite scroll si es necesario */}
-                            <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }}>
+                            <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={() => {
+                                // Acción de "like" al hacer doble clic
+                                axios.post(`http://localhost:8080/posts/${u.id}/likes`, { username: perfil }).then(() => {
+                                    console.log("Post liked");
+                                    fetchPosts(); // Refrescar posts para actualizar el conteo de likes
+                                }).catch(err => {
+                                    console.error("Error liking post:", err);
+                                });
+                            }}>
+                                {u.likes && (
+                                    <p style={{ margin: '0 0 8px 0', fontSize: 12, color: 'var(--muted)' }} onClick={() => {// Acción de "like" al hacer doble clic
+                                        axios.post(`http://localhost:8080/posts/${u.id}/likes`, { username: perfil }).then(() => {
+                                            console.log("Post liked");
+                                            fetchPosts(); // Refrescar posts para actualizar el conteo de likes
+                                        }).catch(err => {
+                                            console.error("Error liking post:", err);
+                                        });
+                                    }}>
+                                        ❤️ {u.likes.length} {u.likes.length === 1 ? 'like' : 'likes'}
+                                    </p>
+                                )}
                                 {u.caption ? (
                                     <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}><b>{u.user.username + " "}</b>{u.caption}</p>
                                 ) : (

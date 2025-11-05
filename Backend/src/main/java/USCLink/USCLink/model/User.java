@@ -56,4 +56,12 @@ public class User {
     public String toString() {
         return this.username; // devuelve el nombre de usuario
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return username != null && username.equals(user.getUsername());
+    }
 }

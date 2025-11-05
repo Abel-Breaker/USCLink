@@ -1,5 +1,7 @@
 package USCLink.USCLink.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -25,6 +27,14 @@ public class Post
 
     @Column(nullable = false)
     private String timestamp; // Timestamp of when the message was sent
+
+    @ManyToMany
+    @JoinTable(
+        name = "post_like", // Intermediate table
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "username")
+    )
+    private List<User> likes = new ArrayList<>();
 
     public Post() {}
 
@@ -57,6 +67,10 @@ public class Post
     public String getTimestamp() 
     {
         return timestamp;
+    }
+    public List<User> getLikes() 
+    {
+        return likes;
     }
 }
 
