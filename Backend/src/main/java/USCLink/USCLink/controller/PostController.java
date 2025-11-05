@@ -86,5 +86,12 @@ public class PostController {
         this.postService.likePost(post, user);
         return ResponseEntity.ok("Post liked successfully.");
     }
+
+    @DeleteMapping("/{id}/likes")
+    public ResponseEntity<String> dislikePost(@PathVariable("id") Long post, @RequestBody User user) {
+        System.out.println("User " + user.getUsername() + " is disliking post ID " + post);
+        this.postService.dislikePost(post, user);
+        return ResponseEntity.ok("Post disliked successfully.");
+    }
     
 }

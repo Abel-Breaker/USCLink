@@ -92,6 +92,14 @@ export default function Posts({ perfil }) {
 
                             {/* contenido: ocupa el resto y permite scroll si es necesario */}
                             <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={() => {
+                                if (u.likes.some(likeUser => likeUser.username === perfil)) {
+                                    axios.delete(`http://localhost:8080/posts/${u.id}/likes`, { data: {username: perfil }}).then(() => {
+                                        console.log("Post disliked");
+                                        fetchPosts(); // Refrescar posts para actualizar el conteo de likes
+                                    }).catch(err => {
+                                        console.error("Error liking post:", err);
+                                    }); // ya le ha dado like
+                                }
                                 // Acción de "like" al hacer doble clic
                                 axios.post(`http://localhost:8080/posts/${u.id}/likes`, { username: perfil }).then(() => {
                                     console.log("Post liked");
@@ -101,14 +109,7 @@ export default function Posts({ perfil }) {
                                 });
                             }}>
                                 {u.likes && (
-                                    <p style={{ margin: '0 0 8px 0', fontSize: 12, color: 'var(--muted)' }} onClick={() => {// Acción de "like" al hacer doble clic
-                                        axios.post(`http://localhost:8080/posts/${u.id}/likes`, { username: perfil }).then(() => {
-                                            console.log("Post liked");
-                                            fetchPosts(); // Refrescar posts para actualizar el conteo de likes
-                                        }).catch(err => {
-                                            console.error("Error liking post:", err);
-                                        });
-                                    }}>
+                                    <p style={{ margin: '0 0 8px 0', fontSize: 12, color: 'var(--muted)' }}>
                                         ❤️ {u.likes.length} {u.likes.length === 1 ? 'like' : 'likes'}
                                     </p>
                                 )}
@@ -117,6 +118,7 @@ export default function Posts({ perfil }) {
                                 ) : (
                                     <p style={{ margin: 0, color: 'var(--muted)' }}><b>{u.user.username + " "}</b> Sin descripción</p>
                                 )}
+                                <p style={{ margin: '8px 0 0 0', fontSize: 10, color: 'var(--muted)' }}>{new Date(u.timestamp).toLocaleString()}</p>
                             </div>
                         </div>
                     ))}
