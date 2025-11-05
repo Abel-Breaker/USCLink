@@ -26,6 +26,7 @@ export default function Messages() {
     sender: User;
     timestamp?: string;
     messageContent: string;
+    users: User[];
   }
 
   /////// USER SESSION (TEMPORAL) ///////
@@ -66,6 +67,7 @@ export default function Messages() {
         chat: activeChat,
         sender: userSesion,
         messageContent: newMessage,
+        users: [], // Array vacío
       };
 
       // Send to backend (and respond with the created message)
@@ -94,6 +96,44 @@ export default function Messages() {
       console.error("Error al obtener las publicaciones:", err);
     }
   };
+
+  // Give a like to a message
+  const handleLike = async (message: Message) => {
+    try {
+      let resp;
+
+      if (message.users.some(user => user.username === userSesion.username)) {
+        resp = await axios.delete(
+          "http://localhost:8080/messages/like",
+          {
+            params: {
+              messageId: message.id,
+              username: userSesion.username,
+            },
+          }
+        );
+      } else {
+        resp = await axios.post(
+          "http://localhost:8080/messages/like",
+          null, // No body
+          {
+            params: {
+              messageId: message.id,
+              username: userSesion.username,
+            },
+          }
+        );
+      }
+
+
+      fetchMessages();
+
+      console.log("Like dado:", resp.data);
+    } catch (err) {
+      console.error("Error al dar like:", err);
+    }
+  };
+
 
 
   /////// FUNCTIONS CALLS (UseEffects) ///////
@@ -139,11 +179,22 @@ export default function Messages() {
             <div
               key={idx}
               className={`${styles.messageBubble} ${msg.sender.username === userSesion.username
-                  ? styles.messageSent
-                  : styles.messageReceived
+                ? styles.messageSent
+                : styles.messageReceived
                 }`}
+              onDoubleClick={() => handleLike(msg)}
             >
-              {msg.sender.username + ": " + msg.messageContent}
+              {/* Contenedor con el mensaje y el emoji si tiene likes */}
+              <div className={styles.messageContent}>
+                {msg.sender.username + ": " + msg.messageContent}
+              </div>
+
+              {msg.users && msg.users.length > 0 && (
+                <div className={styles.likeEmoji}>
+                  ❤️{msg.users.length}
+                </div>
+              )}
+
             </div>
           ))}
           <div ref={messagesEndRef} />

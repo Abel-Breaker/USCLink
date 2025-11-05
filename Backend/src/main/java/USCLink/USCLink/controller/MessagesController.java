@@ -46,4 +46,16 @@ public class MessagesController {
         return ResponseEntity.ok(message);
     }
 
+    @PostMapping("/like")
+    public ResponseEntity<Void> likeMessage(@RequestParam Long messageId, @RequestParam String username) {
+        messageService.addLikeToMessage(messageId, username);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/like")
+    public ResponseEntity<Void> unlikeMessage(@RequestParam Long messageId, @RequestParam String username) {
+        messageService.deleteLikeToMessage(messageId, username);
+        return ResponseEntity.ok().build();
+    }
+
 }

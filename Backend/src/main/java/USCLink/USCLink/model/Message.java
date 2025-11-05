@@ -1,5 +1,8 @@
 package USCLink.USCLink.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
@@ -27,6 +30,14 @@ public class Message {
     @Column(nullable = false)
     private String timestamp; // Timestamp of when the message was sent
 
+    @ManyToMany
+    @JoinTable(
+        name = "message_likes", // Intermediate table
+        joinColumns = @JoinColumn(name = "message_id"),
+        inverseJoinColumns = @JoinColumn(name = "username")
+    )
+    private List<User> users = new ArrayList<>();
+
 
     public Message() {}
 
@@ -45,6 +56,10 @@ public class Message {
         this.timestamp = java.time.Instant.now().toString();
     }
 
+    public Long getId() 
+    {
+        return id;
+    }
     public Chat getChat() 
     {
         return chat;
@@ -78,5 +93,25 @@ public class Message {
     public void setTimestamp(String timestamp)
     {
         this.timestamp = timestamp;
+    }
+    public void addLike(User user) {
+        if (user == null) return;
+        if (!users.contains(user)) {
+            users.add(user);
+        }
+    }
+
+    public void removeLike(User user) {
+        users.remove(user);
+    }
+
+    public boolean hasLike(User user) {
+        return users.contains(user);
+    }
+    public List<User> getUsers() {
+        return users;
+    }
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 }
