@@ -1,5 +1,8 @@
 package USCLink.USCLink.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
@@ -27,6 +30,14 @@ public class Comment
     @Column(nullable = false)
     @Size(min = 1, max = 200)
     private String content;
+
+    @ManyToMany
+    @JoinTable(
+        name = "comment_like", // Intermediate table
+        joinColumns = @JoinColumn(name = "comment_id"),
+        inverseJoinColumns = @JoinColumn(name = "username")
+    )
+    private List<User> likes = new ArrayList<>();
 
     public Comment() {}
 
@@ -56,5 +67,8 @@ public class Comment
     }
     public String getTimestamp() {
         return timestamp;
+    }
+    public List<User> getLikes() {
+        return likes;
     }
 }

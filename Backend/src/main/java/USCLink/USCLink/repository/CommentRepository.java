@@ -17,4 +17,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     // Buscar los comentarios por id
     Set<Comment> findAllById(Long id);
+
+    // Buscar los comentarios por el id del post
+    Page<Comment> findAllByPostId(Long postId, Pageable pageRequest);
 }

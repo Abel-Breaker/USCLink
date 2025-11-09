@@ -1,5 +1,6 @@
 package USCLink.USCLink.service;
 
+import java.util.Set;
 import USCLink.USCLink.model.Post;
 import USCLink.USCLink.model.User;
 import USCLink.USCLink.repository.PostRepository;
@@ -22,6 +23,10 @@ public class PostService {
 
     public Page<Post> getPosts(PageRequest pageRequest) {
         return postRepository.findAll(pageRequest);
+    }
+
+    public Set<Post> getCoincidentPostsById(Long id) {
+        return postRepository.findAllById(id);
     }
 
     public Page<Post> getPostsFollowedByUser(String username, PageRequest pageRequest) {

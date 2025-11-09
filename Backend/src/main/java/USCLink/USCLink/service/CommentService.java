@@ -30,5 +30,27 @@ public class CommentService {
     public Set<Comment> getCoincidentCommentsById(Long id) {
         return commentRepository.findAllById(id);
     }
+
+    public Page<Comment> getCommentsByPostId(Long postId, PageRequest pageRequest) {
+        return commentRepository.findAllByPostId(postId, pageRequest);
+    }
+
+    public void likeComment(Long comment, User user) {
+        Comment existingComment = commentRepository.findById(comment).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+        System.out.println(existingComment.getLikes());
+        if (!existingComment.getLikes().contains(user)) {
+            existingComment.getLikes().add(user);
+            commentRepository.save(existingComment);
+        } 
+    }
+
+    public void dislikeComment(Long comment, User user) {
+        Comment existingComment = commentRepository.findById(comment).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+        System.out.println(existingComment.getLikes());
+        if (existingComment.getLikes().contains(user)) {
+            existingComment.getLikes().remove(user);
+            commentRepository.save(existingComment);
+        } 
+    }
     
 }

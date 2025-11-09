@@ -2,52 +2,50 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 
 
-export default function Posts({ perfil }) {
-    const router = useRouter();
+export default function Comments({ id, perfil }) {
 
-    // Lista de posts
-    const [posts, setPosts] = useState([]);
-    const [loadingPosts, setLoadingPosts] = useState(false);
+    // Lista de comments
+    const [comments, setComments] = useState([]);
+    const [loadingComments, setLoadingComments] = useState(false);
 
     // Obtener lista de usuarios desde el backend
-    const fetchPosts = async () => {
-        if (!perfil) {
-            console.warn("No perfil proporcionado, no se consultan posts");
-            setPosts([]);
+    const fetchComments = async () => {
+        if (!id) {
+            console.warn("No id del post proporcionado, no se consultan comments");
+            setComments([]);
             return;
         }
         try {
-            setLoadingPosts(true);
-            const resp = await axios.get("http://localhost:8080/posts", {
-                params: { followedBy: perfil },
+            setLoadingComments(true);
+            const resp = await axios.get("http://localhost:8080/comments", {
+                params: { postId: id },
             });
-            console.log("Publicaciones obtenidas:", resp.data.content);
-            setPosts(Array.isArray(resp.data.content) ? resp.data.content : []);
+            console.log("Comentarios obtenidos:", resp.data.content);
+            setComments(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
-            console.error("Error al obtener las publicaciones:", err);
-            setPosts([]);
+            console.error("Error al obtener las Comentarios:", err);
+            setComments([]);
         } finally {
-            setLoadingPosts(false);
+            setLoadingComments(false);
         }
     };
 
     useEffect(() => {
-        fetchPosts();
+        fetchComments();
     }, []);
 
 
     return (
         <div style={{ padding: 20 }}>
-            {loadingPosts ? (
-                <p>Cargando posts...</p>
-            ) : posts.length === 0 ? (
-                <p>No se encontraron posts.</p>
+            {loadingComments ? (
+                <p>Cargando comments...</p>
+            ) : comments.length === 0 ? (
+                <p>No se encontraron comments.</p>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16, padding: 8 }}>
-                    {posts.map((u, idx) => (
+                    {comments.map((u, idx) => (
                         <div
                             key={u.id ?? idx}
                             style={{
@@ -75,41 +73,20 @@ export default function Posts({ perfil }) {
                                 <div style={{ fontWeight: 600, color: 'var(--text)' }}>{u.user?.username ?? '-'}</div>
                             </div>
 
-                            {/* imagen: área centrada que muestra la imagen completa */}
-                            <div style={{ flex: '0 0 200px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'}}onClick={() => {
-                                console.log("Navegando a detalles del post", u.id);
-                                router.push(`/posts/details?id=${u.id}&perfil=${perfil}`);
-                            }}>
-                                {u.pathToFile ? (
-                                    <img
-                                        src={`http://localhost:8080/media/${encodeURI(u.pathToFile ?? '')}`}
-                                        alt="Imagen del post"
-                                        style={{
-                                            maxWidth: '100%',
-                                            maxHeight: '100%',
-                                            objectFit: 'contain', // muestra la imagen completa
-                                            display: 'block'
-                                        }}
-                                    />
-                                ) : (
-                                    <div style={{ color: 'var(--muted)' }}>No image</div>
-                                )}
-                            </div>
-
                             {/* contenido: ocupa el resto y permite scroll si es necesario */}
                             <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={() => {
                                 if (u.likes.some(likeUser => likeUser.username === perfil)) {
-                                    axios.delete(`http://localhost:8080/posts/${u.id}/likes`, { data: {username: perfil }}).then(() => {
-                                        console.log("Post disliked");
-                                        fetchPosts(); // Refrescar posts para actualizar el conteo de likes
+                                    axios.delete(`http://localhost:8080/comments/${u.id}/likes`, { data: {username: perfil }}).then(() => {
+                                        console.log("Comment disliked");
+                                        fetchComments(); // Refrescar comments para actualizar el conteo de likes
                                     }).catch(err => {
                                         console.error("Error liking post:", err);
                                     }); // ya le ha dado like
                                 }
                                 // Acción de "like" al hacer doble clic
-                                axios.post(`http://localhost:8080/posts/${u.id}/likes`, { username: perfil }).then(() => {
-                                    console.log("Post liked");
-                                    fetchPosts(); // Refrescar posts para actualizar el conteo de likes
+                                axios.post(`http://localhost:8080/comments/${u.id}/likes`, { username: perfil }).then(() => {
+                                    console.log("Comment liked");
+                                    fetchComments(); // Refrescar comments para actualizar el conteo de likes
                                 }).catch(err => {
                                     console.error("Error liking post:", err);
                                 });
@@ -119,8 +96,8 @@ export default function Posts({ perfil }) {
                                         ❤️ {u.likes.length} {u.likes.length === 1 ? 'like' : 'likes'}
                                     </p>
                                 )}
-                                {u.caption ? (
-                                    <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}><b>{u.user.username + " "}</b>{u.caption}</p>
+                                {u.content ? (
+                                    <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}><b>{u.user.username + " "}</b>{u.content}</p>
                                 ) : (
                                     <p style={{ margin: 0, color: 'var(--muted)' }}><b>{u.user.username + " "}</b> Sin descripción</p>
                                 )}

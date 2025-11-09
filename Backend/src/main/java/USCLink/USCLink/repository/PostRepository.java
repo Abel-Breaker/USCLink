@@ -22,4 +22,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     // Buscar posts por el username del usuario
     Page<Post> findAllByUser(User user, Pageable pageRequest);
+
+    // Buscar posts por id
+    java.util.Set<Post> findAllById(Long id);
 }

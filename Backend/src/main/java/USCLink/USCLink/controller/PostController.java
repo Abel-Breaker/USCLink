@@ -16,8 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -78,6 +76,15 @@ public class PostController {
         }
         return ResponseEntity.ok(postService.getPosts(PageRequest.of(page, pagesize,
                 Sort.by("timestamp").descending())));
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<Post> getPost(@PathVariable("id") Long id) {
+        try {
+            return ResponseEntity.ok(postService.getCoincidentPostsById(id).iterator().next());
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/likes")

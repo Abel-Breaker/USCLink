@@ -1,4 +1,7 @@
 # USCLink
+Necesario:
+npm install react-router-dom
+
 
 TODO LIST:
 Gestor de errores
