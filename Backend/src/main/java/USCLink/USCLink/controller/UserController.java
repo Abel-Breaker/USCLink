@@ -2,6 +2,7 @@ package USCLink.USCLink.controller;
 
 import USCLink.USCLink.exception.DuplicatedUserException;
 import USCLink.USCLink.model.User;
+import USCLink.USCLink.model.Role;
 import USCLink.USCLink.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,12 +26,14 @@ class UserController {
 
     @Autowired
     UserService userService;
+    RoleRepository roleRepository;
 
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping("{username}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<User> getUser(@PathVariable("username") String username) {
         try {
             return ResponseEntity.ok(userService.getCoincidentUsersByUsername(username).iterator().next());
@@ -40,6 +43,7 @@ class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<User>> getUsers(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
             @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort
@@ -51,9 +55,9 @@ class UserController {
 
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<User> addUser(@RequestParam("username") String username, @RequestParam("email") String email, @RequestParam("telephone") Long telephone, @RequestParam("avatar") MultipartFile avatar) throws DuplicatedUserException {
+    public ResponseEntity<User> addUser(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, @RequestParam("telephone") Long telephone, @RequestParam("avatar") MultipartFile avatar, @RequestParam("biography") String biography) throws DuplicatedUserException {
         try{
-            User userObj = new User(username, email, telephone, avatar.getOriginalFilename());
+            User userObj = new User(username, password, email, telephone, avatar.getOriginalFilename(), biography, new Set<Role>(roleRepository.findByRolename("USER")));
             userObj = userService.createUser(userObj);
             String uploadsDir = userObj.getAvatar();
             File destinationFile = new File(uploadsDir);

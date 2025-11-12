@@ -31,6 +31,7 @@ public class PostController {
 
     // Endpoint para subir archivo
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> uploadFile(@RequestPart("user") User user, @RequestPart("file") MultipartFile file, @RequestPart(value = "caption", required = false) String caption) {
         try {
 
@@ -59,6 +60,7 @@ public class PostController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<Post>> getPosts(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
@@ -79,6 +81,7 @@ public class PostController {
     }
 
     @GetMapping("{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Post> getPost(@PathVariable("id") Long id) {
         try {
             return ResponseEntity.ok(postService.getCoincidentPostsById(id).iterator().next());
@@ -88,6 +91,7 @@ public class PostController {
     }
 
     @PostMapping("/{id}/likes")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> likePost(@PathVariable("id") Long post, @RequestBody User user) {
         System.out.println("User " + user.getUsername() + " is liking post ID " + post);
         this.postService.likePost(post, user);
@@ -95,6 +99,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}/likes")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> dislikePost(@PathVariable("id") Long post, @RequestBody User user) {
         System.out.println("User " + user.getUsername() + " is disliking post ID " + post);
         this.postService.dislikePost(post, user);

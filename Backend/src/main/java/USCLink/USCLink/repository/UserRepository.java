@@ -20,6 +20,9 @@ public interface UserRepository extends CrudRepository<User, String> {
     // Comprobar si existe un username
     boolean existsByUsername(String username);
 
+    //
+    Set<User> findByUsername(String username);
+
     // Comprobar si existe un username
     //Optional<User> existsByUsername(String username);
 }
