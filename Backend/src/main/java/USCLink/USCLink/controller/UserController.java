@@ -14,6 +14,8 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import USCLink.USCLink.repository.RoleRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 
 import java.util.Set;
@@ -55,10 +57,9 @@ class UserController {
 
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<User> addUser(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, @RequestParam("telephone") Long telephone, @RequestParam("avatar") MultipartFile avatar, @RequestParam("biography") String biography) throws DuplicatedUserException {
+    public ResponseEntity<User> addUser(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, @RequestParam("telephone") Long telephone, @RequestParam("avatar") MultipartFile avatar, @RequestParam("biography") String biography) throws DuplicatedUserException, RuntimeException {
         try{
-            User userObj = new User(username, password, email, telephone, avatar.getOriginalFilename(), biography, new Set<Role>(roleRepository.findByRolename("USER")));
-            userObj = userService.createUser(userObj);
+            User userObj = userService.createUser(username, password, email, telephone, avatar.getOriginalFilename(), biography);
             String uploadsDir = userObj.getAvatar();
             File destinationFile = new File(uploadsDir);
             destinationFile.getParentFile().mkdirs(); // crea los directorios padre si no existen

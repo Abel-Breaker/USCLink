@@ -4,6 +4,7 @@ import USCLink.USCLink.model.Permission;
 import USCLink.USCLink.model.RefreshToken;
 import USCLink.USCLink.model.User;
 import USCLink.USCLink.repository.*;
+import USCLink.USCLink.exception.InvalidRefreshTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -61,11 +62,15 @@ public class AuthenticationService {
         return authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(user.getUsername(), user.getPassword()));
     }
 
-    public Authentication login(String refreshToken) throws AuthenticationException {
+    public Authentication login(String refreshToken) throws AuthenticationException, InvalidRefreshTokenException {
         Optional<RefreshToken> token = refreshTokenRepository.findByToken(refreshToken);
 
         if (token.isPresent()) {
-            User user = userRepository.findByUsername(token.get().getUser()).orElseThrow(() -> new UsernameNotFoundException(token.get().getUser()));
+            java.util.Set<User> users = userRepository.findByUsername(token.get().getUser());
+            if (users.isEmpty()) {
+                throw new UsernameNotFoundException("Username not found");
+            }
+            User user = users.iterator().next();
 
             return login(user);
         }
@@ -111,7 +116,7 @@ public class AuthenticationService {
                 .getPayload();
 
         String username = claims.getSubject();
-        Optional<User> user = userRepository.findByUsername(username);
+        Optional<User> user = userRepository.findById(username);
 
         if (user.isPresent()) {
             return UsernamePasswordAuthenticationToken.authenticated(username, token, user.get().getAuthorities());

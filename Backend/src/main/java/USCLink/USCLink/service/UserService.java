@@ -5,6 +5,8 @@ import USCLink.USCLink.model.Role;
 import USCLink.USCLink.model.User;
 import USCLink.USCLink.controller.ErrorController;
 import USCLink.USCLink.repository.UserRepository;
+import USCLink.USCLink.repository.RoleRepository;
+import USCLink.USCLink.exception.DuplicatedUserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -32,14 +34,15 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public User createUser(User user) throws DuplicatedUserException {
-        User newUser = user;
+    public User createUser(String username, String password, String email, Long telephone, String avatar, String biography) throws DuplicatedUserException {
+        User newUser = new User(username, password, email, telephone, avatar, biography, Set.of(roleRepository.findById("USER").orElseThrow(() -> new RuntimeException("Role not found"))));;
         if (!userExist(newUser.getUsername())) {
-            System.out.println("Creating user: " + user.getUsername() + ", " + user.getEmail() + ", " + user.getTelephone());
-            return userRepository.save(user);
+            System.out.println("Creating user: " + newUser.getUsername() + ", " + newUser.getEmail() + ", " + newUser.getTelephone());
+            newUser.setPassword(passwordEncoder.encode(password));
+            return userRepository.save(newUser);
         } else {
-            System.out.println("User already exists: " + user.getUsername());
-            throw new DuplicatedUserException(user);
+            System.out.println("User already exists: " + newUser.getUsername());
+            throw new DuplicatedUserException(newUser);
         }
     }
 
@@ -56,8 +59,12 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public User loadUserByUsername(String username) throws Exception {
-        return userRepository.findByUsername(username).orElseThrow(() -> new Exception(username));
+    public User loadUserByUsername(String username) throws UsernameNotFoundException {
+        Set<User> users = userRepository.findByUsername(username);
+        if (users.isEmpty()) {
+            throw new UsernameNotFoundException("User not found: " + username);
+        } 
+        return userRepository.findByUsername(username).iterator().next();
     }
 
     public Page<User> get(PageRequest page) {
@@ -66,22 +73,6 @@ public class UserService implements UserDetailsService {
 
     public User get(String username){
         return loadUserByUsername(username);
-    }
-
-    public User create(User user) throws DuplicateUserException {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new DuplicateUserException(user);
-        }
-
-        Role userRole = roleRepository.findByRolename("USER");
-
-        return userRepository.save(
-                new User(
-                        user.getUsername(),
-                        passwordEncoder.encode(user.getPassword()),
-                        Set.of(userRole)
-                )
-        );
     }
 
 }

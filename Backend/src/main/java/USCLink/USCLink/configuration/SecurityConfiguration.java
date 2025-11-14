@@ -1,7 +1,7 @@
 package USCLink.USCLink.configuration;
 
-import gal.usc.etse.es.restdemo.filter.JWTFilter;
-import gal.usc.etse.es.restdemo.service.AuthenticationService;
+import USCLink.USCLink.filter.JWTFilter;
+import USCLink.USCLink.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,9 +28,10 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(authorize ->
                         authorize.requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/media/**", "/public/**").permitAll()
                         .anyRequest().authenticated()
 
                 )

@@ -1,6 +1,6 @@
-/*package USCLink.USCLink.model;
+package USCLink.USCLink.model;
 
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.*;
 
 @SuppressWarnings("unused")
 @Entity
@@ -9,7 +9,7 @@ public class RefreshToken {
     @Id
     private String token;
     private String user;
-    @TimeToLive
+    @Column(nullable = false)
     private long ttl;
 
     public RefreshToken() { }
@@ -47,4 +47,4 @@ public class RefreshToken {
         this.ttl = ttl;
         return this;
     }
-}*/
+}

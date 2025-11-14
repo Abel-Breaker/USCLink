@@ -101,7 +101,6 @@ export default function Posts({ perfil }) {
                                 if (u.likes.some(likeUser => likeUser.username === perfil)) {
                                     axios.delete(`http://localhost:8080/posts/${u.id}/likes`, { data: {username: perfil }}).then(() => {
                                         console.log("Post disliked");
-                                        fetchPosts(); // Refrescar posts para actualizar el conteo de likes
                                     }).catch(err => {
                                         console.error("Error liking post:", err);
                                     }); // ya le ha dado like
