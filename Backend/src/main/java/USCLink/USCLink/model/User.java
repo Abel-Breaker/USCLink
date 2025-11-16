@@ -98,6 +98,9 @@ public class User  implements UserDetails {
     public String getAvatar() {
         return avatar;
     }
+    public String getBiography() {
+        return biography;
+    }
 
     @Override
     public String toString() {

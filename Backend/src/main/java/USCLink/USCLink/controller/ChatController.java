@@ -6,6 +6,7 @@ import USCLink.USCLink.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,6 +21,7 @@ public class ChatController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public Page<Chat> getChats(
             @RequestParam String username,
             @RequestParam(defaultValue = "0") int page,

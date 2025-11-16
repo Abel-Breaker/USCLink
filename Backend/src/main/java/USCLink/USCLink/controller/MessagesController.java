@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -25,6 +26,7 @@ public class MessagesController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public Page<Message> getMessages(
             @RequestParam Long chatId,
             @RequestParam(defaultValue = "0") int page,
@@ -38,6 +40,7 @@ public class MessagesController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Message> sendMessage(@RequestBody Message message) {
 
         message.setTimestamp(Instant.now().toString());
@@ -47,12 +50,14 @@ public class MessagesController {
     }
 
     @PostMapping("/like")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> likeMessage(@RequestParam Long messageId, @RequestParam String username) {
         messageService.addLikeToMessage(messageId, username);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/like")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> unlikeMessage(@RequestParam Long messageId, @RequestParam String username) {
         messageService.deleteLikeToMessage(messageId, username);
         return ResponseEntity.ok().build();

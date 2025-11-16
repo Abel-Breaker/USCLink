@@ -11,7 +11,7 @@ import axios from "axios";
 export default function InicioSesion() {
     const router = useRouter();
 
-    
+
     // Estado para almacenar los valores del formulario
     const [formData, setFormData] = useState({
         username: "",
@@ -31,7 +31,7 @@ export default function InicioSesion() {
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         setFormData({ ...formData, [name]: value });
-        
+
     };
 
     // Función que se ejecuta al enviar el formulario
@@ -44,13 +44,19 @@ export default function InicioSesion() {
             const response = await axios.post(
                 "http://localhost:8080/auth/login", // URL del backend
                 {
-                        username: formData.username, 
-                        password: formData.password
+                    username: formData.username,
+                    password: formData.password
                 },
                 {
                     headers: { "Content-Type": "application/json" },
                 }
             );
+            const accessToken = response.headers['authorization'];
+
+            if (accessToken) {
+                localStorage.setItem('accessToken', accessToken);
+                console.log("Token de Acceso guardado:", accessToken);
+            }
             setCreatedSesion(response.data);
             console.log("Sesion creada:", response.data);
 

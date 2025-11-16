@@ -49,6 +49,9 @@ public class UserService implements UserDetailsService {
     public Set<User> getCoincidentUsersByUsername(String username) {
         return userRepository.findAllByUsername(username);
     }
+    public Page<User> getUsersByUsernameNotContaining(String username, PageRequest pageRequest) {
+        return userRepository.findAllByNotUsername(username, pageRequest);
+    }
 
     public Page<User> getUsers(PageRequest pageRequest) {
         return userRepository.findAll(pageRequest);

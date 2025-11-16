@@ -48,8 +48,13 @@ class UserController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<User>> getUsers(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
-            @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort
+            @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort,
+            @RequestParam(value = "user", required = false) String user
 ) {
+    if (user!=null) {
+        return ResponseEntity.ok(userService.getUsersByUsernameNotContaining(user, PageRequest.of(page, pagesize,
+                Sort.by("username"))));
+    }
         return ResponseEntity.ok(userService.getUsers(PageRequest.of(page, pagesize,
                 Sort.by("username"))));
     }

@@ -70,6 +70,7 @@ export default function Registro() {
             alert("Hubo un error al enviar los datos");
         } finally {
             setLoading(false);
+            router.push(`/`);
         }
     };
 

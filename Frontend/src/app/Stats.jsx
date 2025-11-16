@@ -11,6 +11,13 @@ export default function Stats({ perfil }) {
     const [posts, setPosts] = useState([]);
     const [followedBy, setFollowedBy] = useState([]);
     const [follows, setFollows] = useState([]);
+    const accessToken = localStorage.getItem('accessToken'); 
+    
+    if (!accessToken) {
+        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+        router.push('/'); 
+        return; 
+    }
 
     // Obtener lista de usuarios desde el backend
     const fetchPosts = async () => {
@@ -22,7 +29,10 @@ export default function Stats({ perfil }) {
         try {
             const resp = await axios.get("http://localhost:8080/posts", {
                 params: { perfil: perfil },
-                // timeout: 5000, // opcional
+                headers: {
+                    // Simplemente enviamos el valor completo "Bearer <token>"
+                    'Authorization': accessToken 
+                }
             });
             console.log("Publicaciones obtenidas en las estadísticas:", resp.data.content);
             setPosts(Array.isArray(resp.data.content) ? resp.data.content : []);
@@ -41,7 +51,10 @@ export default function Stats({ perfil }) {
         try {
             const resp = await axios.get("http://localhost:8080/follows", {
                 params: { followed: perfil },
-                // timeout: 5000, // opcional
+                headers: {
+                    // Simplemente enviamos el valor completo "Bearer <token>"
+                    'Authorization': accessToken 
+                }
             });
             console.log("Follows obtenidos1:", resp.data.content);
             setFollowedBy(Array.isArray(resp.data.content) ? resp.data.content : []);
@@ -60,7 +73,10 @@ export default function Stats({ perfil }) {
         try {
             const resp = await axios.get("http://localhost:8080/follows", {
                 params: { followedBy: perfil },
-                // timeout: 5000, // opcional
+                headers: {
+                    // Simplemente enviamos el valor completo "Bearer <token>"
+                    'Authorization': accessToken 
+                }
             });
             console.log("Follows obtenidos2:", resp.data.content);
             setFollows(Array.isArray(resp.data.content) ? resp.data.content : []);

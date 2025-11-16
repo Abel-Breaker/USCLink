@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
@@ -27,6 +28,7 @@ public class CommentController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<Comment>> getComments(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
@@ -41,6 +43,7 @@ public class CommentController {
     }
 
     @GetMapping("{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Comment> getComment(@PathVariable("id") Long id) {
         try {
             return ResponseEntity.ok(commentService.getCoincidentCommentsById(id).iterator().next());
@@ -50,6 +53,7 @@ public class CommentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Comment> addComment(@RequestBody Comment comment) {
         try {
             comment = commentService.createComment(comment.getUser(), comment.getPost(), comment.getContent());
@@ -70,6 +74,7 @@ public class CommentController {
     }
 
     @PostMapping("/{id}/likes")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> likeComment(@PathVariable("id") Long comment, @RequestBody User user) {
         System.out.println("User " + user.getUsername() + " is liking comment ID " + comment);
         this.commentService.likeComment(comment, user);
@@ -77,6 +82,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}/likes")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> dislikeComment(@PathVariable("id") Long comment, @RequestBody User user) {
         System.out.println("User " + user.getUsername() + " is disliking comment ID " + comment);
         this.commentService.dislikeComment(comment, user);

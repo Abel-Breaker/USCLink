@@ -1,14 +1,72 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useSearchParams } from 'next/navigation';
+import axios from "axios";
 import styles from "../page.module.css";
 import CreateUser from "../users/Creation";
 import Nav from "../Nav";
 import Posts from "../Posts";
 import Stats from "../Stats";
+import Recomendations from "../Recomendations";
+import { useRouter } from "next/navigation";
 
-export default function Home({ perfil }: { perfil: string }) {
-  console.log("Perfil recibido en inicio/page.tsx:", perfil);
+// Define la estructura de los datos de usuario
+interface User {
+  username: string;
+  avatar: string;
+  email: string;
+  telephone: number;
+  biography: string;
+}
+
+export default function Home() {
+  const router = useRouter();
+  // 1. Obtener los parámetros de búsqueda de la URL
+  const searchParams = useSearchParams();
+
+  // 2. Extraer el valor 'perfil' de los parámetros
+  const perfil = searchParams.get('perfil') || 'Invitado';
+
+  // Lista de usuarios
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingUser, setLoadingUser] = useState(false);
+
+  const accessToken = localStorage.getItem('accessToken'); 
+    
+    if (!accessToken) {
+        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+        router.push('/'); 
+        return; 
+    }
+
+  // Obtener lista de usuarios desde el backend
+  const fetchUser = async () => {
+    try {
+      setLoadingUser(true);
+      const resp = await axios.get(
+            `http://localhost:8080/users/${perfil}`,
+            {
+                headers: {
+                    // Simplemente enviamos el valor completo "Bearer <token>"
+                    'Authorization': accessToken 
+                }
+            }
+        );
+      console.log("Usuario obtenido:", resp.data);
+      setUser(resp.data);
+    } catch (err) {
+      console.error("Error al obtener usuario:", err);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, [accessToken, router]);
+
   return (
     <div>
       <Nav/>
@@ -17,25 +75,24 @@ export default function Home({ perfil }: { perfil: string }) {
         <div className={styles["profile-header"]}>
           <ul>
             <li>
-              <img src={`http://localhost:8080/media/uploads/vilarino16/6bf274fb-5a09-4d99-8585-71894a1182b2_elperro.jpg`} alt="Avatar" />
+              <img src={`http://localhost:8080/media/${user?.avatar}`} alt="Avatar" />
             </li>
             <li>
               <h2>{perfil}</h2>
-              <p>@ElPerro</p>
-              <p>Aprendiendo React</p>
+              <p>@{perfil}</p>
+              <p>{user?.biography}</p>
             </li>
           </ul>
         </div>
 
         {/* Stats */}
-        <Stats perfil={perfil}/>
+        <Stats perfil={perfil} />
 
         {/* Posts */}
-        <Posts perfil={perfil}/>
+        <Posts perfil={perfil} />
       </div>
       <footer className={styles.footer}>
-        {/* Enlace a la página de creación de usuario */}
-        <a href="/users">Ir a Crear Usuario</a>
+        <Recomendations perfil={perfil} />
       </footer>
     </div>
   );

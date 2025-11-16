@@ -17,7 +17,12 @@ export default function PostDetails() {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(`http://localhost:8080/posts/${id}`);
+      const resp = await axios.get(`http://localhost:8080/posts/${id}`, {
+        headers: {
+          'Authorization': accessToken
+        }
+      }
+      );
       console.log("Post obtenido:", resp.data);
       setPost(resp.data);
     } catch (err) {
@@ -48,7 +53,7 @@ export default function PostDetails() {
         margin: '20px auto'
       }}
     >
-        <Nav></Nav>
+      <Nav></Nav>
       {/* Header: avatar + usuario */}
       <div style={{ padding: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: '#e6eef6' }}>
@@ -101,14 +106,14 @@ export default function PostDetails() {
         }}
         onDoubleClick={() => {
           if (post.likes?.some(likeUser => likeUser.username === perfil)) {
-            axios.delete(`http://localhost:8080/posts/${post.id}/likes`, { data: { username: perfil } })
+            axios.delete(`http://localhost:8080/posts/${post.id}/likes`, { data: { username: perfil }, headers: {'Authorization': accessToken} })
               .then(() => {
                 console.log("Post disliked");
                 fetchPost();
               })
               .catch(err => console.error("Error al quitar like:", err));
           } else {
-            axios.post(`http://localhost:8080/posts/${post.id}/likes`, { username: perfil })
+            axios.post(`http://localhost:8080/posts/${post.id}/likes`, { username: perfil }, { headers: {'Authorization': accessToken} })
               .then(() => {
                 console.log("Post liked");
                 fetchPost();
@@ -137,7 +142,7 @@ export default function PostDetails() {
           {new Date(post.timestamp).toLocaleString()}
         </p>
       </div>
-    <Comments id={post.id} perfil ={perfil}/>
+      <Comments id={post.id} perfil={perfil} />
     </div>
   );
 }

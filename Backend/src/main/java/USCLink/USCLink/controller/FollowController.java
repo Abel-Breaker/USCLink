@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
@@ -27,6 +28,7 @@ public class FollowController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<Follow>> getFollows(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
@@ -45,6 +47,7 @@ public class FollowController {
     }
 
     @GetMapping("{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Follow> getFollow(@PathVariable("user1") String user1,
             @PathVariable("user2") String user2) {
         try {
@@ -55,6 +58,7 @@ public class FollowController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Follow> addFollow(@RequestBody Follow follow) {
         try {
             follow = followService.createFollow(follow.getUser1(), follow.getUser2());

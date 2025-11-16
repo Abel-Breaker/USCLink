@@ -11,6 +11,13 @@ export default function Posts({ perfil }) {
     // Lista de posts
     const [posts, setPosts] = useState([]);
     const [loadingPosts, setLoadingPosts] = useState(false);
+    const accessToken = localStorage.getItem('accessToken'); 
+    
+    if (!accessToken) {
+        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+        router.push('/'); 
+        return; 
+    }
 
     // Obtener lista de usuarios desde el backend
     const fetchPosts = async () => {
@@ -23,6 +30,10 @@ export default function Posts({ perfil }) {
             setLoadingPosts(true);
             const resp = await axios.get("http://localhost:8080/posts", {
                 params: { followedBy: perfil },
+                headers: {
+                    // Simplemente enviamos el valor completo "Bearer <token>"
+                    'Authorization': accessToken 
+                }
             });
             console.log("Publicaciones obtenidas:", resp.data.content);
             setPosts(Array.isArray(resp.data.content) ? resp.data.content : []);

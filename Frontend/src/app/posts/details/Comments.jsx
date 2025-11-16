@@ -21,6 +21,10 @@ export default function Comments({ id, perfil }) {
             setLoadingComments(true);
             const resp = await axios.get("http://localhost:8080/comments", {
                 params: { postId: id },
+                headers: {
+                    // Simplemente enviamos el valor completo "Bearer <token>"
+                    'Authorization': accessToken
+                }
             });
             console.log("Comentarios obtenidos:", resp.data.content);
             setComments(Array.isArray(resp.data.content) ? resp.data.content : []);
@@ -76,7 +80,9 @@ export default function Comments({ id, perfil }) {
                             {/* contenido: ocupa el resto y permite scroll si es necesario */}
                             <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={() => {
                                 if (u.likes.some(likeUser => likeUser.username === perfil)) {
-                                    axios.delete(`http://localhost:8080/comments/${u.id}/likes`, { data: {username: perfil }}).then(() => {
+                                    axios.delete(`http://localhost:8080/comments/${u.id}/likes`, {
+                                        data: { username: perfil }, headers: { 'Authorization': accessToken }
+                                    }).then(() => {
                                         console.log("Comment disliked");
                                         fetchComments(); // Refrescar comments para actualizar el conteo de likes
                                     }).catch(err => {
@@ -84,7 +90,11 @@ export default function Comments({ id, perfil }) {
                                     }); // ya le ha dado like
                                 }
                                 // Acción de "like" al hacer doble clic
-                                axios.post(`http://localhost:8080/comments/${u.id}/likes`, { username: perfil }).then(() => {
+                                axios.post(`http://localhost:8080/comments/${u.id}/likes`, { username: perfil }, {
+                                    headers: {
+                                        'Authorization': accessToken
+                                    }
+                                }).then(() => {
                                     console.log("Comment liked");
                                     fetchComments(); // Refrescar comments para actualizar el conteo de likes
                                 }).catch(err => {

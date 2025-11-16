@@ -4,8 +4,10 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "./Messages.module.css";
+import { useRouter } from "next/navigation";
 
 export default function Messages() {
+  const router = useRouter();
 
   /////// INTERFACES ///////
 
@@ -39,6 +41,13 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState(""); // Send a message
   const [messages, setMessages] = useState<Message[]>([]); // Message's variable
   const messagesEndRef = useRef(null);
+  const accessToken = localStorage.getItem('accessToken');
+
+  if (!accessToken) {
+    console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+    router.push('/');
+    return;
+  }
 
   /////// FUNCTIONS ///////
 
@@ -46,7 +55,11 @@ export default function Messages() {
   const fetchChats = async () => {
     try {
       const resp = await axios.get("http://localhost:8080/chat", {
-        params: { username: userSesion.username } // TODO: Que pase el usuario entero? No solo el username (Ns si hará falta)
+        params: { username: userSesion.username }, // TODO: Que pase el usuario entero? No solo el username (Ns si hará falta)
+        headers: {
+          // Simplemente enviamos el valor completo "Bearer <token>"
+          'Authorization': accessToken
+        }
       });
       setChats(resp.data.content);
       console.log("Chats obtenidos:", resp.data.content);
@@ -71,7 +84,12 @@ export default function Messages() {
       };
 
       // Send to backend (and respond with the created message)
-      const resp = await axios.post("http://localhost:8080/messages", messageToSend);
+      const resp = await axios.post("http://localhost:8080/messages", messageToSend, {
+        headers: {
+          // Simplemente enviamos el valor completo "Bearer <token>"
+          'Authorization': accessToken
+        }
+      });
 
       // Update local messages
       setMessages([...messages, resp.data]);
@@ -88,7 +106,11 @@ export default function Messages() {
   const fetchMessages = async () => {
     try {
       const resp = await axios.get("http://localhost:8080/messages", {
-        params: { chatId: activeChat?.id }
+        params: { chatId: activeChat?.id },
+        headers: {
+          // Simplemente enviamos el valor completo "Bearer <token>"
+          'Authorization': accessToken
+        }
       });
       setMessages(resp.data.content);
       console.log("Mensajes obtenidos:", resp.data.content);
@@ -110,6 +132,10 @@ export default function Messages() {
               messageId: message.id,
               username: userSesion.username,
             },
+            headers: {
+              // Simplemente enviamos el valor completo "Bearer <token>"
+              'Authorization': accessToken
+            }
           }
         );
       } else {
@@ -121,6 +147,10 @@ export default function Messages() {
               messageId: message.id,
               username: userSesion.username,
             },
+            headers: {
+              // Simplemente enviamos el valor completo "Bearer <token>"
+              'Authorization': accessToken
+            }
           }
         );
       }
