@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSearchParams } from 'next/navigation';
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import styles from "../page.module.css";
 import CreateUser from "../users/Creation";
 import Nav from "../Nav";
@@ -27,37 +27,54 @@ export default function Home() {
   const searchParams = useSearchParams();
 
   // 2. Extraer el valor 'perfil' de los parámetros
-  const perfil = searchParams.get('perfil') || 'Invitado';
+  const perfil = searchParams.get('perfil') || localStorage.getItem('perfil');
 
   // Lista de usuarios
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(false);
 
-  const accessToken = localStorage.getItem('accessToken'); 
-    
-    if (!accessToken) {
-        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
-        router.push('/'); 
-        return; 
-    }
+  const accessToken = localStorage.getItem('accessToken');
+
+  if (!accessToken) {
+    console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+    router.push('/');
+    return;
+  }
 
   // Obtener lista de usuarios desde el backend
   const fetchUser = async () => {
     try {
       setLoadingUser(true);
       const resp = await axios.get(
-            `http://localhost:8080/users/${perfil}`,
-            {
-                headers: {
-                    // Simplemente enviamos el valor completo "Bearer <token>"
-                    'Authorization': accessToken 
-                }
-            }
-        );
+        `http://localhost:8080/users/${perfil}`,
+        {
+          headers: {
+            // Simplemente enviamos el valor completo "Bearer <token>"
+            'Authorization': accessToken
+          }
+        }
+      );
       console.log("Usuario obtenido:", resp.data);
       setUser(resp.data);
     } catch (err) {
-      console.error("Error al obtener usuario:", err);
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.get(
+              `http://localhost:8080/auth/refresh`,
+              { withCredentials: true }
+            );
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
     } finally {
       setLoadingUser(false);
     }
@@ -69,7 +86,7 @@ export default function Home() {
 
   return (
     <div>
-      <Nav/>
+      <Nav />
       <div className={styles["profile-container"]}>
         {/* Encabezado */}
         <div className={styles["profile-header"]}>

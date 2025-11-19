@@ -51,17 +51,20 @@ export default function InicioSesion() {
                     headers: { "Content-Type": "application/json" },
                 }
             );
+            console.log("Respuesta del servidor:", response.headers);
             const accessToken = response.headers['authorization'];
 
             if (accessToken) {
                 localStorage.setItem('accessToken', accessToken);
                 console.log("Token de Acceso guardado:", accessToken);
+                localStorage.setItem('perfil', formData.username);
+                console.log("Perfil guardado", formData.username);
             }
             setCreatedSesion(response.data);
             console.log("Sesion creada:", response.data);
 
         } catch (error) {
-            console.error("Error al crear follow:", error);
+            console.error("Error al logear:", error);
             setError(error);
             alert("Hubo un error al enviar los datos");
         } finally {

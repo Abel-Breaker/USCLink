@@ -38,3 +38,5 @@ out/
 
 # Si quitas esto se rompe Visual
 !**/src/main/**/
+
+/uploads/
