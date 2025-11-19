@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSearchParams } from 'next/navigation';
-import axios, { isAxiosError } from "axios";
+import axios, { AxiosError, isAxiosError } from "axios";
 import styles from "../page.module.css";
 import CreateUser from "../users/Creation";
 import Nav from "../Nav";
@@ -11,6 +10,8 @@ import Posts from "../Posts";
 import Stats from "../Stats";
 import Recomendations from "../Recomendations";
 import { useRouter } from "next/navigation";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+
 
 // Define la estructura de los datos de usuario
 interface User {
@@ -32,6 +33,22 @@ export default function Home() {
   // Lista de usuarios
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(false);
+
+  // Estado para almacenar los valores del formulario
+  const [formData, setFormData] = useState<{ user: string; pathToFile: File | string; caption: string }>({
+    user: "",
+    pathToFile: "",
+    caption: ""
+  });
+
+  // Nuevo estado para guardar la respuesta del servicio y errores
+  const [createdPost, setCreatedPost] = useState(null);
+  const [error, setError] = useState<AxiosError | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Lista de posts
+  const [posts, setPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
 
   const accessToken = localStorage.getItem('accessToken');
 
@@ -84,6 +101,55 @@ export default function Home() {
     fetchUser();
   }, [accessToken, router]);
 
+  // Función para actualizar el estado cuando el usuario escribe
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = e.target;
+
+    // Comprobación de que 'files' existe (para el input de tipo 'file')
+    if (name === "pathToFile" && files) {
+      // Almacena el primer archivo de la lista
+      setFormData({ ...formData, pathToFile: files[0] as unknown as string });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  // Función que se ejecuta al enviar el formulario
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Evita que la página se recargue
+
+    const formDataToSend = new FormData();
+    // El backend espera que el JSON venga como "user" (string)
+    formDataToSend.append("user", new Blob([JSON.stringify({ username: perfil })], { type: "application/json" }));
+    formDataToSend.append("file", formData.pathToFile);
+    formDataToSend.append("caption", formData.caption);
+
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post(
+        "http://localhost:8080/posts", // URL del backend
+        formDataToSend,
+        {
+          headers: { "Content-Type": "multipart/form-data", 'Authorization': accessToken }
+        }
+      );
+      setCreatedPost(response.data);
+
+      // Limpiar formulario
+      setFormData({ user: "", pathToFile: "", caption: "" });
+
+    } catch (error) {
+      console.error("Error al publicar:", error);
+      if (isAxiosError(error)) {
+        setError(error);
+      }
+      alert("Hubo un error al enviar los datos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <Nav />
@@ -101,6 +167,24 @@ export default function Home() {
             </li>
           </ul>
         </div>
+        <form className={styles["create-form"]} onSubmit={handleSubmit}>
+          <input
+            type="file"
+            name="pathToFile"
+            className={styles["tweet-input"]}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            name="caption"
+            placeholder="Texto del post"
+            className={styles["tweet-input"]}
+            onChange={handleChange}
+          />
+          <button type="submit" className={styles["tweet-button"]}>
+            Publicar
+          </button>
+        </form>
 
         {/* Stats */}
         <Stats perfil={perfil} />
