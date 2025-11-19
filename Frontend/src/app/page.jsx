@@ -63,13 +63,14 @@ export default function InicioSesion() {
             setCreatedSesion(response.data);
             console.log("Sesion creada:", response.data);
 
+            setLoading(false);
+            router.push(`/inicio?perfil=${formData.username}`);
+
         } catch (error) {
             console.error("Error al logear:", error);
             setError(error);
             alert("Hubo un error al enviar los datos");
-        } finally {
-            setLoading(false);
-            router.push(`/inicio?perfil=${formData.username}`);
+            window.location.reload();
         }
     };
 
