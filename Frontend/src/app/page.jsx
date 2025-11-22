@@ -63,6 +63,20 @@ export default function InicioSesion() {
             setCreatedSesion(response.data);
             console.log("Sesion creada:", response.data);
 
+            // Save in local storage User info TODOOOOOOOOOOOOOOOOO Camviar perfil, guardar la resp en una variable y guardar la variable en localstorage
+            const resp = await axios.get(
+                    `http://localhost:8080/users/${formData.username}`,
+                    {
+                      headers: {
+                        // Simplemente enviamos el valor completo "Bearer <token>"
+                        'Authorization': accessToken
+                      }
+                    }
+                  );
+                  console.log("Usuario obtenido:", resp.data);
+
+            sessionStorage.setItem("UserInfo", JSON.stringify(resp.data));
+
             setLoading(false);
             router.push(`/inicio?perfil=${formData.username}`);
 

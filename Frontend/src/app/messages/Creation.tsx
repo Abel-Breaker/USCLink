@@ -11,9 +11,15 @@ export default function Messages() {
 
   /////// INTERFACES ///////
 
+  // Define la estructura de los datos de usuario
   interface User {
     username: string;
+    avatar: string;
+    email: string;
+    telephone: number;
+    biography: string;
   }
+
 
   interface Chat {
     id: number;
@@ -32,7 +38,8 @@ export default function Messages() {
   }
 
   /////// USER SESSION (TEMPORAL) ///////
-  const userSesion: User = { username: "Abel" }; // Usuario que inicio sesión (TEMPORAL DEBUG)
+  //const userSesion: User = { username: "Abel" }; // Usuario que inicio sesión (TEMPORAL DEBUG)
+  const [userSession, setUserSession] = useState<User | null>(null);
 
 
   /////// VARIABLES ///////
@@ -40,6 +47,11 @@ export default function Messages() {
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [newMessage, setNewMessage] = useState(""); // Send a message
   const [messages, setMessages] = useState<Message[]>([]); // Message's variable
+
+  const [showCreateChatModal, setShowCreateChatModal] = useState(false);
+  const [newChatName, setNewChatName] = useState("");
+  const [newChatUsers, setNewChatUsers] = useState<string>(""); // usernames separados por coma
+
   const messagesEndRef = useRef(null);
   const accessToken = localStorage.getItem('accessToken');
 
@@ -51,11 +63,71 @@ export default function Messages() {
 
   /////// FUNCTIONS ///////
 
+  const obtainUserSession = async () => {
+    try {
+      const storedUserRaw = sessionStorage.getItem("UserInfo");
+
+      if (storedUserRaw) {
+        const parsed = JSON.parse(storedUserRaw);
+
+        const user: User = {
+          username: parsed.username,
+          avatar: parsed.avatar,
+          email: parsed.email,
+          telephone: parsed.telephone,
+          biography: parsed.biography,
+        };
+
+        setUserSession(user);
+      }
+    } catch (err) {
+      console.error("Error al obtener el user:", err);
+    }
+  };
+
+
+  // Obtener lista de usuarios desde el backend
+  /*
+  const fetchUser = async () => {
+    try {
+      const resp = await axios.get(
+        `http://localhost:8080/users/${perfil}`,
+        {
+          headers: {
+            // Simplemente enviamos el valor completo "Bearer <token>"
+            'Authorization': accessToken
+          }
+        }
+      );
+      console.log("Usuario obtenido:", resp.data);
+      setUser(resp.data);
+    } catch (err) {
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.get(
+              `http://localhost:8080/auth/refresh`,
+              { withCredentials: true }
+            );
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
+    }
+  };*/
+
   // Obtain chats from backend
   const fetchChats = async () => {
     try {
       const resp = await axios.get("http://localhost:8080/chat", {
-        params: { username: userSesion.username }, // TODO: Que pase el usuario entero? No solo el username (Ns si hará falta)
+        params: { username: userSession!.username }, // TODO: Que pase el usuario entero? No solo el username (Ns si hará falta)
         headers: {
           // Simplemente enviamos el valor completo "Bearer <token>"
           'Authorization': accessToken
@@ -78,10 +150,11 @@ export default function Messages() {
       // Al recargar la página ya si que asocia todo desde la base de datos
       const messageToSend: Message = {
         chat: activeChat,
-        sender: userSesion,
+        sender: userSession!,
         messageContent: newMessage,
         users: [], // Array vacío
       };
+      console.log(messageToSend);
 
       // Send to backend (and respond with the created message)
       const resp = await axios.post("http://localhost:8080/messages", messageToSend, {
@@ -124,13 +197,13 @@ export default function Messages() {
     try {
       let resp;
 
-      if (message.users.some(user => user.username === userSesion.username)) {
+      if (message.users.some(user => user.username === userSession!.username)) {
         resp = await axios.delete(
           "http://localhost:8080/messages/like",
           {
             params: {
               messageId: message.id,
-              username: userSesion.username,
+              username: userSession!.username,
             },
             headers: {
               // Simplemente enviamos el valor completo "Bearer <token>"
@@ -145,7 +218,7 @@ export default function Messages() {
           {
             params: {
               messageId: message.id,
-              username: userSesion.username,
+              username: userSession!.username,
             },
             headers: {
               // Simplemente enviamos el valor completo "Bearer <token>"
@@ -164,13 +237,51 @@ export default function Messages() {
     }
   };
 
+  const handleCreateChat = async () => {
+    let usersArray = newChatUsers.split(",").map(u => u.trim());
+    usersArray.push(userSession!.username);
+    const usersSet = new Set(usersArray);
+    usersArray = Array.from(usersSet);
+
+    try {
+      const resp = await axios.post(
+        "http://localhost:8080/chat",
+          null, // No body
+          {
+            params: {
+              nameChat: newChatName,
+              users: usersArray
+            },
+            headers: {
+              // Simplemente enviamos el valor completo "Bearer <token>"
+              'Authorization': accessToken
+            }
+          }
+      );
+      console.log("Chat creado:", resp.data);
+      fetchChats();
+      setShowCreateChatModal(false);
+      setNewChatName("");
+      setNewChatUsers("");
+    } catch (err) {
+      console.error("Error creando el chat:", err);
+    }
+  };
+
 
 
   /////// FUNCTIONS CALLS (UseEffects) ///////
 
   useEffect(() => {
-    fetchChats();
-  }, []);
+    obtainUserSession();
+  }, []); // solo cargamos la sesión al inicio
+
+  useEffect(() => {
+    if (userSession) {
+      fetchChats(); // ahora userSession ya existe
+    }
+  }, [userSession]); // se ejecuta cada vez que userSession cambia
+
 
   // Llama a fetchMessages cuando activeChat cambie
   useEffect(() => {
@@ -185,6 +296,15 @@ export default function Messages() {
       {/* Sidebar de conversaciones */}
       <aside className={styles.sidebar}>
         <h2 className={styles.title}>Mensajes</h2>
+
+        {/* Botón para crear grupo */}
+        <button
+          className={styles.createChatButton}
+          onClick={() => setShowCreateChatModal(true)}
+        >
+          + Crear grupo
+        </button>
+
         <ul className={styles.chatList}>
           {chats.map((chat) => (
             <li
@@ -208,7 +328,7 @@ export default function Messages() {
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`${styles.messageBubble} ${msg.sender.username === userSesion.username
+              className={`${styles.messageBubble} ${msg.sender.username === userSession!.username
                 ? styles.messageSent
                 : styles.messageReceived
                 }`}
@@ -244,6 +364,40 @@ export default function Messages() {
           </button>
         </footer>
       </main>
+
+      {/* Modal para crear grupo */}
+      {showCreateChatModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Crear nuevo grupo</h3>
+            <input
+              type="text"
+              placeholder="Nombre del grupo"
+              value={newChatName}
+              onChange={(e) => setNewChatName(e.target.value)}
+              className={styles.modalInput}
+            />
+            <input
+              type="text"
+              placeholder="Usuarios (separados por coma)"
+              value={newChatUsers}
+              onChange={(e) => setNewChatUsers(e.target.value)}
+              className={styles.modalInput}
+            />
+            <div className={styles.modalButtons}>
+              <button onClick={handleCreateChat} className={styles.modalButton}>
+                Crear
+              </button>
+              <button
+                onClick={() => setShowCreateChatModal(false)}
+                className={styles.modalButtonCancel}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

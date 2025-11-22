@@ -41,4 +41,8 @@ Autenticación
 Excepciones tokens (Ánimo dani!)
 Revisar los push para cambiar de página
 
+Checkear al crear grupo los usuarios - Abel
+
+Añadir cerrar sesion
+
 Hecho:

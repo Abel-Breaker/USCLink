@@ -1,6 +1,9 @@
 package USCLink.USCLink.service;
 
 import USCLink.USCLink.model.Chat;
+import USCLink.USCLink.model.Comment;
+import USCLink.USCLink.model.Post;
+import USCLink.USCLink.model.User;
 import USCLink.USCLink.repository.ChatRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +18,10 @@ public class ChatService {
 
     public ChatService(ChatRepository chatRepository) {
         this.chatRepository = chatRepository;
+    }
+
+    public Chat createChat(Chat chat) {
+        return chatRepository.save(chat);
     }
 
     public Page<Chat> getAllChatsFromUser(String username, Pageable pageable) {
