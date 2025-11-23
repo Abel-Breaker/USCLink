@@ -55,15 +55,18 @@ export default function InicioSesion() {
             const accessToken = response.headers['authorization'];
 
             if (accessToken) {
-                localStorage.setItem('accessToken', accessToken);
+                if (sessionStorage.getItem('accessToken') !== null) {
+                    sessionStorage.removeItem('accessToken');
+                }
+                sessionStorage.setItem('accessToken', accessToken);
                 console.log("Token de Acceso guardado:", accessToken);
-                localStorage.setItem('perfil', formData.username);
+                sessionStorage.setItem('perfil', formData.username);
                 console.log("Perfil guardado", formData.username);
             }
             setCreatedSesion(response.data);
             console.log("Sesion creada:", response.data);
 
-            // Save in local storage User info TODOOOOOOOOOOOOOOOOO Camviar perfil, guardar la resp en una variable y guardar la variable en localstorage
+            // Save in local storage User info TODOOOOOOOOOOOOOOOOO Camviar perfil, guardar la resp en una variable y guardar la variable en sessionstorage
             const resp = await axios.get(
                     `http://localhost:8080/users/${formData.username}`,
                     {

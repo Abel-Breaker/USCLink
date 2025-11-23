@@ -28,7 +28,7 @@ export default function Home() {
   const searchParams = useSearchParams();
 
   // 2. Extraer el valor 'perfil' de los parámetros
-  const perfil = searchParams.get('perfil') || localStorage.getItem('perfil');
+  const perfil = searchParams.get('perfil') || sessionStorage.getItem('perfil');
 
   // Lista de usuarios
   const [user, setUser] = useState<User | null>(null);
@@ -50,7 +50,7 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = sessionStorage.getItem('accessToken');
 
   if (!accessToken) {
     console.error("Token de Acceso no encontrado. Redirigiendo a login.");
@@ -81,10 +81,22 @@ export default function Home() {
           console.warn("Token expirado o no autorizado. Intentando refrescar...");
           // Lógica para refrescar el token
           try {
-            const resp = await axios.get(
+            const resp = await axios.post(
               `http://localhost:8080/auth/refresh`,
               { withCredentials: true }
             );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+
+            if (accessToken) {
+                if (sessionStorage.getItem('accessToken') !== null) {
+                    sessionStorage.removeItem('accessToken');
+                }
+                sessionStorage.setItem('accessToken', accessToken);
+                console.log("Token de Acceso guardado:", accessToken);
+                // Reintentar la solicitud original después de refrescar el token
+                router.refresh();
+            }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
           }
@@ -139,12 +151,35 @@ export default function Home() {
       // Limpiar formulario
       setFormData({ user: "", pathToFile: "", caption: "" });
 
-    } catch (error) {
-      console.error("Error al publicar:", error);
-      if (isAxiosError(error)) {
-        setError(error);
+    } catch (err) {
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `http://localhost:8080/auth/refresh`,
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+
+            if (accessToken) {
+                if (sessionStorage.getItem('accessToken') !== null) {
+                    sessionStorage.removeItem('accessToken');
+                }
+                sessionStorage.setItem('accessToken', accessToken);
+                console.log("Token de Acceso guardado:", accessToken);
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
       }
-      alert("Hubo un error al enviar los datos");
     } finally {
       setLoading(false);
     }

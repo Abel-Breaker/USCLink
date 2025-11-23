@@ -49,7 +49,7 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .sameSite(Cookie.SameSite.STRICT.toString())
                 .path(refreshPath)
-                .maxAge(Duration.ofDays(7))
+                .maxAge(Duration.ofSeconds(10))
                 .build();
         System.out.println(cookie.toString());
         return ResponseEntity.noContent()

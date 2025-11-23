@@ -5,6 +5,12 @@ import axios from "axios";
 
 
 export default function Comments({ id, perfil }) {
+    const accessToken = sessionStorage.getItem('accessToken');
+    if (!accessToken) {
+        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+        router.push('/');
+        return;
+    }
 
     // Lista de comments
     const [comments, setComments] = useState([]);
@@ -29,8 +35,35 @@ export default function Comments({ id, perfil }) {
             console.log("Comentarios obtenidos:", resp.data.content);
             setComments(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
-            console.error("Error al obtener las Comentarios:", err);
-            setComments([]);
+            // 1. Comprobamos si el error es un error de Axios
+            if (isAxiosError(err)) {
+                console.error("Error de Axios:", err.message);
+                if (err.response?.status === 401) {
+                    console.warn("Token expirado o no autorizado. Intentando refrescar...");
+                    // Lógica para refrescar el token
+                    try {
+                        const resp = await axios.post(
+                            `http://localhost:8080/auth/refresh`,
+                            { withCredentials: true }
+                        );
+                        console.log("Respuesta del servidor:", resp.headers);
+                        const accessToken = resp.headers['authorization'];
+
+                        if (accessToken) {
+                            if (sessionStorage.getItem('accessToken') !== null) {
+                                sessionStorage.removeItem('accessToken');
+                            }
+                            sessionStorage.setItem('accessToken', accessToken);
+                            console.log("Token de Acceso guardado:", accessToken);
+                            router.refresh();
+                        }
+                    } catch (refreshErr) {
+                        console.error("Fallo al refrescar el token.", refreshErr);
+                    }
+                }
+            } else {
+                console.error("Error desconocido/no-Axios:", err);
+            }
         } finally {
             setLoadingComments(false);
         }
@@ -98,7 +131,34 @@ export default function Comments({ id, perfil }) {
                                     console.log("Comment liked");
                                     fetchComments(); // Refrescar comments para actualizar el conteo de likes
                                 }).catch(err => {
-                                    console.error("Error liking post:", err);
+                                    // 1. Comprobamos si el error es un error de Axios
+                                    if (isAxiosError(err)) {
+                                        console.error("Error de Axios:", err.message);
+                                        if (err.response?.status === 401) {
+                                            console.warn("Token expirado o no autorizado. Intentando refrescar...");
+                                            // Lógica para refrescar el token
+                                            try {
+                                                const resp = axios.post(
+                                                    `http://localhost:8080/auth/refresh`,
+                                                    { withCredentials: true }
+                                                );
+                                                console.log("Respuesta del servidor:", resp.headers);
+                                                const accessToken = resp.headers['authorization'];
+
+                                                if (accessToken) {
+                                                    if (sessionStorage.getItem('accessToken') !== null) {
+                                                        sessionStorage.removeItem('accessToken');
+                                                    }
+                                                    sessionStorage.setItem('accessToken', accessToken);
+                                                    console.log("Token de Acceso guardado:", accessToken);
+                                                }
+                                            } catch (refreshErr) {
+                                                console.error("Fallo al refrescar el token.", refreshErr);
+                                            }
+                                        }
+                                    } else {
+                                        console.error("Error desconocido/no-Axios:", err);
+                                    }
                                 });
                             }}>
                                 {u.likes && (

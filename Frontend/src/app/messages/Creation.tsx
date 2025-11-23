@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "./Messages.module.css";
 import { useRouter } from "next/navigation";
+import { isAxiosError } from "axios";
 
 export default function Messages() {
   const router = useRouter();
@@ -18,6 +19,8 @@ export default function Messages() {
     email: string;
     telephone: number;
     biography: string;
+    password: string;
+    roles: string[];
   }
 
 
@@ -53,7 +56,7 @@ export default function Messages() {
   const [newChatUsers, setNewChatUsers] = useState<string>(""); // usernames separados por coma
 
   const messagesEndRef = useRef(null);
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = sessionStorage.getItem('accessToken');
 
   if (!accessToken) {
     console.error("Token de Acceso no encontrado. Redirigiendo a login.");
@@ -76,6 +79,8 @@ export default function Messages() {
           email: parsed.email,
           telephone: parsed.telephone,
           biography: parsed.biography,
+          password: parsed.password,
+          roles: parsed.roles,
         };
 
         setUserSession(user);
@@ -136,7 +141,36 @@ export default function Messages() {
       setChats(resp.data.content);
       console.log("Chats obtenidos:", resp.data.content);
     } catch (err) {
-      console.error("Error al obtener las publicaciones:", err);
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `http://localhost:8080/auth/refresh`,
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+
+            if (accessToken) {
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              // Reintentar la solicitud original después de refrescar el token
+              router.refresh();
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
     }
   };
 
@@ -149,12 +183,13 @@ export default function Messages() {
       // Por ejemplo, de sender solo mandas el username, el nombre realmente no hace falta
       // Al recargar la página ya si que asocia todo desde la base de datos
       const messageToSend: Message = {
-        chat: activeChat,
-        sender: userSession!,
+        chat: { id: activeChat.id, nameChat: "", timestamp: "", users: [] }, // Solo enviamos el id del chat
+        sender: {username: userSession?.username || "", avatar: "", email: "", telephone: 0, biography: "", password: "", roles: []}, // Solo enviamos el username del sender
         messageContent: newMessage,
         users: [], // Array vacío
       };
       console.log(messageToSend);
+      console.log(accessToken);
 
       // Send to backend (and respond with the created message)
       const resp = await axios.post("http://localhost:8080/messages", messageToSend, {
@@ -171,7 +206,37 @@ export default function Messages() {
       setNewMessage("");
 
     } catch (err) {
-      console.error("Error sending message:", err);
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `http://localhost:8080/auth/refresh`,
+              {},
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+
+            if (accessToken) {
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              // Reintentar la solicitud original después de refrescar el token
+              router.refresh();
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
     }
   };
 
@@ -188,7 +253,36 @@ export default function Messages() {
       setMessages(resp.data.content);
       console.log("Mensajes obtenidos:", resp.data.content);
     } catch (err) {
-      console.error("Error al obtener las publicaciones:", err);
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `http://localhost:8080/auth/refresh`,
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+
+            if (accessToken) {
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              // Reintentar la solicitud original después de refrescar el token
+              router.refresh();
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
     }
   };
 
@@ -233,7 +327,36 @@ export default function Messages() {
 
       console.log("Like dado:", resp.data);
     } catch (err) {
-      console.error("Error al dar like:", err);
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `http://localhost:8080/auth/refresh`,
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+
+            if (accessToken) {
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              // Reintentar la solicitud original después de refrescar el token
+              router.refresh();
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
     }
   };
 
@@ -246,17 +369,17 @@ export default function Messages() {
     try {
       const resp = await axios.post(
         "http://localhost:8080/chat",
-          null, // No body
-          {
-            params: {
-              nameChat: newChatName,
-              users: usersArray
-            },
-            headers: {
-              // Simplemente enviamos el valor completo "Bearer <token>"
-              'Authorization': accessToken
-            }
+        null, // No body
+        {
+          params: {
+            nameChat: newChatName,
+            users: usersArray
+          },
+          headers: {
+            // Simplemente enviamos el valor completo "Bearer <token>"
+            'Authorization': accessToken
           }
+        }
       );
       console.log("Chat creado:", resp.data);
       fetchChats();
@@ -264,7 +387,36 @@ export default function Messages() {
       setNewChatName("");
       setNewChatUsers("");
     } catch (err) {
-      console.error("Error creando el chat:", err);
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `http://localhost:8080/auth/refresh`,
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+
+            if (accessToken) {
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              // Reintentar la solicitud original después de refrescar el token
+              router.refresh();
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
     }
   };
 

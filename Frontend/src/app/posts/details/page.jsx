@@ -5,8 +5,18 @@ import axios from "axios";
 import { useSearchParams } from 'next/navigation';
 import Comments from "./Comments";
 import Nav from "../../Nav";
+import { isAxiosError } from "axios";
+import Router from "next/router";
 
 export default function PostDetails() {
+  const accessToken = sessionStorage.getItem('accessToken');
+
+  if (!accessToken) {
+    console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+    Router.push('/');
+    return;
+  }
+  
   const params = useSearchParams();
   const id = params.get('id');
   const perfil = params.get('perfil');
@@ -26,7 +36,35 @@ export default function PostDetails() {
       console.log("Post obtenido:", resp.data);
       setPost(resp.data);
     } catch (err) {
-      console.error("Error al obtener el post:", err);
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `http://localhost:8080/auth/refresh`,
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+
+            if (accessToken) {
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              router.refresh();
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
     } finally {
       setLoading(false);
     }
@@ -106,14 +144,14 @@ export default function PostDetails() {
         }}
         onDoubleClick={() => {
           if (post.likes?.some(likeUser => likeUser.username === perfil)) {
-            axios.delete(`http://localhost:8080/posts/${post.id}/likes`, { data: { username: perfil }, headers: {'Authorization': accessToken} })
+            axios.delete(`http://localhost:8080/posts/${post.id}/likes`, { data: { username: perfil }, headers: { 'Authorization': accessToken } })
               .then(() => {
                 console.log("Post disliked");
                 fetchPost();
               })
               .catch(err => console.error("Error al quitar like:", err));
           } else {
-            axios.post(`http://localhost:8080/posts/${post.id}/likes`, { username: perfil }, { headers: {'Authorization': accessToken} })
+            axios.post(`http://localhost:8080/posts/${post.id}/likes`, { username: perfil }, { headers: { 'Authorization': accessToken } })
               .then(() => {
                 console.log("Post liked");
                 fetchPost();
