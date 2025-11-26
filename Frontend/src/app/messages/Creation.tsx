@@ -19,10 +19,9 @@ export default function Messages() {
     email: string;
     telephone: number;
     biography: string;
-    password: string;
+    //password: string;
     roles: string[];
   }
-
 
   interface Chat {
     id: number;
@@ -79,7 +78,7 @@ export default function Messages() {
           email: parsed.email,
           telephone: parsed.telephone,
           biography: parsed.biography,
-          password: parsed.password,
+          //password: parsed.password,
           roles: parsed.roles,
         };
 
@@ -89,44 +88,6 @@ export default function Messages() {
       console.error("Error al obtener el user:", err);
     }
   };
-
-
-  // Obtener lista de usuarios desde el backend
-  /*
-  const fetchUser = async () => {
-    try {
-      const resp = await axios.get(
-        `http://localhost:8080/users/${perfil}`,
-        {
-          headers: {
-            // Simplemente enviamos el valor completo "Bearer <token>"
-            'Authorization': accessToken
-          }
-        }
-      );
-      console.log("Usuario obtenido:", resp.data);
-      setUser(resp.data);
-    } catch (err) {
-      // 1. Comprobamos si el error es un error de Axios
-      if (isAxiosError(err)) {
-        console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
-          console.warn("Token expirado o no autorizado. Intentando refrescar...");
-          // Lógica para refrescar el token
-          try {
-            const resp = await axios.get(
-              `http://localhost:8080/auth/refresh`,
-              { withCredentials: true }
-            );
-          } catch (refreshErr) {
-            console.error("Fallo al refrescar el token.", refreshErr);
-          }
-        }
-      } else {
-        console.error("Error desconocido/no-Axios:", err);
-      }
-    }
-  };*/
 
   // Obtain chats from backend
   const fetchChats = async () => {
@@ -184,7 +145,7 @@ export default function Messages() {
       // Al recargar la página ya si que asocia todo desde la base de datos
       const messageToSend: Message = {
         chat: { id: activeChat.id, nameChat: "", timestamp: "", users: [] }, // Solo enviamos el id del chat
-        sender: {username: userSession?.username || "", avatar: "", email: "", telephone: 0, biography: "", password: "", roles: []}, // Solo enviamos el username del sender
+        sender: {username: userSession?.username || "", avatar: "", email: "", telephone: 0, biography: "", roles: []}, // Solo enviamos el username del sender
         messageContent: newMessage,
         users: [], // Array vacío
       };
