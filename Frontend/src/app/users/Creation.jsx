@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "../page.module.css";
 
@@ -26,7 +26,7 @@ export default function CreateUserForm() {
     const fetchUsers = async () => {
         try {
             setLoadingUsers(true);
-            const resp = await axios.get("http://localhost:8080/users"); 
+            const resp = await axios.get("/api/users"); 
             console.log("Usuarios obtenidos:", resp.data.content);
             setUsers(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -63,7 +63,7 @@ export default function CreateUserForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/users", // URL del backend
+                "/api/users", // URL del backend
                 formDataToSend
             );
             setCreatedUser(response.data);

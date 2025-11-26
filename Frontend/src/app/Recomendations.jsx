@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import styles from "./page.module.css";
 import axios from "axios";
 
@@ -11,7 +11,7 @@ export default function Recomendations({ perfil }) {
     const [recomendations, setRecomendations] = useState([]);
     const [followedBy, setFollowedBy] = useState([]);
     const [follows, setFollows] = useState([]);
-    const accessToken = sessionStorage.getItem('accessToken');
+    var accessToken = sessionStorage.getItem('accessToken');
 
     if (!accessToken) {
         console.error("Token de Acceso no encontrado. Redirigiendo a login.");
@@ -26,8 +26,9 @@ export default function Recomendations({ perfil }) {
             setRecomendations([]);
             return;
         }
+        accessToken = sessionStorage.getItem('accessToken');
         try {
-            const resp = await axios.get("http://localhost:8080/users", {
+            const resp = await axios.get("/api/users", {
                 params: { user: perfil },
                 headers: {
                     // Simplemente enviamos el valor completo "Bearer <token>"
@@ -40,12 +41,12 @@ export default function Recomendations({ perfil }) {
             // 1. Comprobamos si el error es un error de Axios
             if (isAxiosError(err)) {
                 console.error("Error de Axios:", err.message);
-                if (err.response?.status === 401) {
+                if (err.response?.status === 401 || err.response?.status === 403) {
                     console.warn("Token expirado o no autorizado. Intentando refrescar...");
                     // Lógica para refrescar el token
                     try {
                         const resp = await axios.post(
-                            `http://localhost:8080/auth/refresh`,
+                            `/api/auth/refresh`,
                             { withCredentials: true }
                         );
                         console.log("Respuesta del servidor:", resp.headers);
@@ -93,14 +94,15 @@ export default function Recomendations({ perfil }) {
                             width: 120,
                             alignItems: 'center',
                         }}>
-                            <img src={`http://localhost:8080/media/${u[1]}`} alt="Avatar" style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: '#e6eef6' }} />
+                            <img src={`/api/media/${u[1]}`} alt="Avatar" style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: '#e6eef6' }} />
                             <p><strong>{u[0]}</strong></p>
                             <p>{u[2]}</p>
                             <button onClick={
                                 async () => {
+                                    accessToken = sessionStorage.getItem('accessToken');
                                     try {
                                         const response = await axios.post(
-                                            "http://localhost:8080/follows", // URL del backend
+                                            "/api/follows", // URL del backend
                                             {
                                                 user1: {
                                                     username: perfil,
@@ -122,12 +124,12 @@ export default function Recomendations({ perfil }) {
                                         // 1. Comprobamos si el error es un error de Axios
                                         if (isAxiosError(err)) {
                                             console.error("Error de Axios:", err.message);
-                                            if (err.response?.status === 401) {
+                                            if (err.response?.status === 401 || err.response?.status === 403) {
                                                 console.warn("Token expirado o no autorizado. Intentando refrescar...");
                                                 // Lógica para refrescar el token
                                                 try {
                                                     const resp = await axios.post(
-                                                        `http://localhost:8080/auth/refresh`,
+                                                        `/api/auth/refresh`,
                                                         { withCredentials: true }
                                                     );
                                                     console.log("Respuesta del servidor:", resp.headers);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios";
 
 
@@ -23,9 +23,10 @@ export default function Comments({ id, perfil }) {
             setComments([]);
             return;
         }
+        accessToken = sessionStorage.getItem('accessToken');
         try {
             setLoadingComments(true);
-            const resp = await axios.get("http://localhost:8080/comments", {
+            const resp = await axios.get("/api/comments", {
                 params: { postId: id },
                 headers: {
                     // Simplemente enviamos el valor completo "Bearer <token>"
@@ -38,12 +39,12 @@ export default function Comments({ id, perfil }) {
             // 1. Comprobamos si el error es un error de Axios
             if (isAxiosError(err)) {
                 console.error("Error de Axios:", err.message);
-                if (err.response?.status === 401) {
+                if (err.response?.status === 401 || err.response?.status === 403) {
                     console.warn("Token expirado o no autorizado. Intentando refrescar...");
                     // Lógica para refrescar el token
                     try {
                         const resp = await axios.post(
-                            `http://localhost:8080/auth/refresh`,
+                            `/api/auth/refresh`,
                             { withCredentials: true }
                         );
                         console.log("Respuesta del servidor:", resp.headers);
@@ -101,7 +102,7 @@ export default function Comments({ id, perfil }) {
                                 <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: '#e6eef6' }}>
                                     {u.user?.avatar && (
                                         <img
-                                            src={`http://localhost:8080/media/${encodeURI(u.user.avatar)}`} //TODO: añadir fotos de perfil
+                                            src={`/api/media/${encodeURI(u.user.avatar)}`} //TODO: añadir fotos de perfil
                                             alt="Avatar"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                                         />
@@ -112,8 +113,9 @@ export default function Comments({ id, perfil }) {
 
                             {/* contenido: ocupa el resto y permite scroll si es necesario */}
                             <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={() => {
+                                accessToken = sessionStorage.getItem('accessToken');
                                 if (u.likes.some(likeUser => likeUser.username === perfil)) {
-                                    axios.delete(`http://localhost:8080/comments/${u.id}/likes`, {
+                                    axios.delete(`/api/comments/${u.id}/likes`, {
                                         data: { username: perfil }, headers: { 'Authorization': accessToken }
                                     }).then(() => {
                                         console.log("Comment disliked");
@@ -122,8 +124,9 @@ export default function Comments({ id, perfil }) {
                                         console.error("Error liking post:", err);
                                     }); // ya le ha dado like
                                 }
+                                accessToken = sessionStorage.getItem('accessToken');
                                 // Acción de "like" al hacer doble clic
-                                axios.post(`http://localhost:8080/comments/${u.id}/likes`, { username: perfil }, {
+                                axios.post(`/api/comments/${u.id}/likes`, { username: perfil }, {
                                     headers: {
                                         'Authorization': accessToken
                                     }
@@ -134,12 +137,12 @@ export default function Comments({ id, perfil }) {
                                     // 1. Comprobamos si el error es un error de Axios
                                     if (isAxiosError(err)) {
                                         console.error("Error de Axios:", err.message);
-                                        if (err.response?.status === 401) {
+                                        if (err.response?.status === 401 || err.response?.status === 403) {
                                             console.warn("Token expirado o no autorizado. Intentando refrescar...");
                                             // Lógica para refrescar el token
                                             try {
                                                 const resp = axios.post(
-                                                    `http://localhost:8080/auth/refresh`,
+                                                    `/api/auth/refresh`,
                                                     { withCredentials: true }
                                                 );
                                                 console.log("Respuesta del servidor:", resp.headers);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
@@ -12,7 +12,7 @@ export default function Posts({ perfil }) {
     // Lista de posts
     const [posts, setPosts] = useState([]);
     const [loadingPosts, setLoadingPosts] = useState(false);
-    const accessToken = sessionStorage.getItem('accessToken');
+    var accessToken = sessionStorage.getItem('accessToken');
 
     if (!accessToken) {
         console.error("Token de Acceso no encontrado. Redirigiendo a login.");
@@ -22,6 +22,7 @@ export default function Posts({ perfil }) {
 
     // Obtener lista de usuarios desde el backend
     const fetchPosts = async () => {
+        accessToken = sessionStorage.getItem('accessToken');
         if (!perfil) {
             console.warn("No perfil proporcionado, no se consultan posts");
             setPosts([]);
@@ -29,7 +30,7 @@ export default function Posts({ perfil }) {
         }
         try {
             setLoadingPosts(true);
-            const resp = await axios.get("http://localhost:8080/posts", {
+            const resp = await axios.get("/api/posts", {
                 params: { followedBy: perfil },
                 headers: {
                     // Simplemente enviamos el valor completo "Bearer <token>"
@@ -42,12 +43,12 @@ export default function Posts({ perfil }) {
             // 1. Comprobamos si el error es un error de Axios
             if (isAxiosError(err)) {
                 console.error("Error de Axios:", err.message);
-                if (err.response?.status === 401) {
+                if (err.response?.status === 401 || err.response?.status === 403) {
                     console.warn("Token expirado o no autorizado. Intentando refrescar...");
                     // Lógica para refrescar el token
                     try {
                         const resp = await axios.post(
-                            `http://localhost:8080/auth/refresh`,
+                            `/api/auth/refresh`,
                             { withCredentials: true }
                         );
                         console.log("Respuesta del servidor:", resp.headers);
@@ -105,7 +106,7 @@ export default function Posts({ perfil }) {
                                 <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: '#e6eef6' }}>
                                     {u.user?.avatar && (
                                         <img
-                                            src={`http://localhost:8080/media/${encodeURI(u.user.avatar)}`} //TODO: añadir fotos de perfil
+                                            src={`/api/media/${encodeURI(u.user.avatar)}`} //TODO: añadir fotos de perfil
                                             alt="Avatar"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                                         />
@@ -121,7 +122,7 @@ export default function Posts({ perfil }) {
                             }}>
                                 {u.pathToFile ? (
                                     <img
-                                        src={`http://localhost:8080/media/${encodeURI(u.pathToFile ?? '')}`}
+                                        src={`/api/media/${encodeURI(u.pathToFile ?? '')}`}
                                         alt="Imagen del post"
                                         style={{
                                             maxWidth: '100%',
@@ -137,8 +138,9 @@ export default function Posts({ perfil }) {
 
                             {/* contenido: ocupa el resto y permite scroll si es necesario */}
                             <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={() => {
+                                accessToken = sessionStorage.getItem('accessToken');
                                 if (u.likes.some(likeUser => likeUser.username === perfil)) {
-                                    axios.delete(`http://localhost:8080/posts/${u.id}/likes`, {
+                                    axios.delete(`/api/posts/${u.id}/likes`, {
                                         data: { username: perfil }, headers: {
                                             // Simplemente enviamos el valor completo "Bearer <token>"
                                             'Authorization': accessToken
@@ -150,12 +152,12 @@ export default function Posts({ perfil }) {
                                         // 1. Comprobamos si el error es un error de Axios
                                         if (isAxiosError(err)) {
                                             console.error("Error de Axios:", err.message);
-                                            if (err.response?.status === 401) {
+                                            if (err.response?.status === 401 || err.response?.status === 403) {
                                                 console.warn("Token expirado o no autorizado. Intentando refrescar...");
                                                 // Lógica para refrescar el token
                                                 try {
                                                     const resp = axios.post(
-                                                        `http://localhost:8080/auth/refresh`,
+                                                        `/api/auth/refresh`,
                                                         { withCredentials: true }
                                                     );
                                                     console.log("Respuesta del servidor:", resp.headers);
@@ -179,10 +181,11 @@ export default function Posts({ perfil }) {
                                     }); // ya le ha dado like
                                 } else {
                                     // Acción de "like" al hacer doble clic
+                                    accessToken = sessionStorage.getItem('accessToken');
                                     console.log("Like post con token:", accessToken);
                                     console.log("Perfil:", perfil);
                                     axios.post(
-                                        `http://localhost:8080/posts/${u.id}/likes`,
+                                        `/api/posts/${u.id}/likes`,
                                         { username: perfil }, // body
                                         { // config
                                             headers: {
@@ -202,7 +205,7 @@ export default function Posts({ perfil }) {
                                                 // Lógica para refrescar el token
                                                 try {
                                                     const resp = axios.post(
-                                                        `http://localhost:8080/auth/refresh`,
+                                                        `/api/auth/refresh`,
                                                         { withCredentials: true }
                                                     );
                                                     console.log("Respuesta del servidor:", resp.headers);

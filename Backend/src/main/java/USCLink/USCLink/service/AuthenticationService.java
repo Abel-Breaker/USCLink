@@ -37,7 +37,7 @@ public class AuthenticationService {
     private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Value("${auth.jwt.ttl:PT15M}")
+    @Value("${auth.jwt.ttl:PT10S}")
     private Duration tokenTTL;
 
     @Value("${auth.refresh.ttl:PT72H}")
@@ -49,8 +49,7 @@ public class AuthenticationService {
             KeyPair keyPair,
             UserRepository userRepository,
             RoleRepository roleRepository,
-            RefreshTokenRepository refreshTokenRepository
-    ) {
+            RefreshTokenRepository refreshTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.keyPair = keyPair;
         this.userRepository = userRepository;
@@ -59,10 +58,14 @@ public class AuthenticationService {
     }
 
     public Authentication login(User user) throws AuthenticationException {
-        return authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(user.getUsername(), user.getPassword()));
+        System.out
+                .println("Attempting login for user: " + user.getUsername() + " with password: " + user.getPassword());
+        return authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken.unauthenticated(user.getUsername(), user.getPassword()));
     }
 
     public Authentication login(String refreshToken) throws AuthenticationException, InvalidRefreshTokenException {
+        System.out.println("Attempting login with refresh token: " + refreshToken);
         Optional<RefreshToken> token = refreshTokenRepository.findByToken(refreshToken);
 
         if (token.isPresent()) {
@@ -71,10 +74,20 @@ public class AuthenticationService {
                 throw new UsernameNotFoundException("Username not found");
             }
             User user = users.iterator().next();
-
-            return login(user);
+            System.out.println("Refresh token valid for user: " + user.getUsername());
+            try {
+                return UsernamePasswordAuthenticationToken.authenticated(
+                        user.getUsername(), // Principal (nombre de usuario)
+                        null, // Credenciales (null o el refresh token si lo quieres guardar)
+                        user.getAuthorities() // Autoridades
+                );
+            } catch (Exception e) {
+                System.out.println(
+                        "Authentication failed for user: " + user.getUsername() + " due to: " + e.getMessage());
+                throw e;
+            }
         }
-
+        System.out.println("Invalid refresh token: " + refreshToken);
         throw new InvalidRefreshTokenException(refreshToken);
     }
 
@@ -130,14 +143,12 @@ public class AuthenticationService {
 
         roleRepository.findAll().forEach(role -> {
             if (!role.getIncludes().isEmpty()) {
-                builder.role("ROLE_"+role.getRolename()).implies(
-                        role.getIncludes().stream().map(i -> "ROLE_"+i.getRolename()).toArray(String[]::new)
-                );
+                builder.role("ROLE_" + role.getRolename()).implies(
+                        role.getIncludes().stream().map(i -> "ROLE_" + i.getRolename()).toArray(String[]::new));
             }
             if (!role.getPermissions().isEmpty()) {
-                builder.role("ROLE_"+role.getRolename()).implies(
-                        role.getPermissions().stream().map(Permission::toString).toArray(String[]::new)
-                );
+                builder.role("ROLE_" + role.getRolename()).implies(
+                        role.getPermissions().stream().map(Permission::toString).toArray(String[]::new));
             }
         });
 

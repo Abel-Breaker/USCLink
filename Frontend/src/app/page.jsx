@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 
 import Image from "next/image";
 import styles from "./page.module.css";
@@ -42,7 +42,7 @@ export default function InicioSesion() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/auth/login", // URL del backend
+                "/api/auth/login", // URL del backend
                 {
                     username: formData.username,
                     password: formData.password
@@ -66,9 +66,9 @@ export default function InicioSesion() {
             setCreatedSesion(response.data);
             console.log("Sesion creada:", response.data);
 
-            // Save in local storage User info TODOOOOOOOOOOOOOOOOO Camviar perfil, guardar la resp en una variable y guardar la variable en sessionstorage
+            // Save in local storage User info TODOOOOOOOOOOOOOOOOO Cambiar perfil, guardar la resp en una variable y guardar la variable en sessionstorage
             const resp = await axios.get(
-                    `http://localhost:8080/users/${formData.username}`,
+                    `/api/users/${formData.username}`,
                     {
                       headers: {
                         // Simplemente enviamos el valor completo "Bearer <token>"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 
 import Image from "next/image";
 import styles from "../../page.module.css";
@@ -56,7 +56,7 @@ export default function Registro() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/auth/register", // URL del backend
+                "/api/auth/register", // URL del backend
                 formDataToSend
             );
             setCreatedSesion(response.data);

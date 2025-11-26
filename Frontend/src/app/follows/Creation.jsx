@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "../page.module.css";
 
@@ -24,7 +24,7 @@ export default function CreateFollowForm() {
     const fetchFollows = async () => {
         try {
             setLoadingFollows(true);
-            const resp = await axios.get("http://localhost:8080/follows");
+            const resp = await axios.get("/api/follows");
             console.log("Follows obtenidos:", resp.data.content);
             setFollows(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -54,7 +54,7 @@ export default function CreateFollowForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/follows", // URL del backend
+                "/api/follows", // URL del backend
                 {
                     user1: {
                         username: formData.user1, 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "../page.module.css";
 
@@ -25,7 +25,7 @@ export default function CreateCommentForm() {
     const fetchComments = async () => {
         try {
             setLoadingComments(true);
-            const resp = await axios.get("http://localhost:8080/comments");
+            const resp = await axios.get("/api/comments");
             console.log("Comments obtenidos:", resp.data.content);
             setComments(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -55,7 +55,7 @@ export default function CreateCommentForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/comments", // URL del backend
+                "/api/comments", // URL del backend
                 {
                     user: {
                         username: formData.user, // Aquí podría ser más info si lo tienes

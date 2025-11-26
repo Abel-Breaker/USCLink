@@ -1,7 +1,7 @@
 'use client';
 
 // Messages.jsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "./Messages.module.css";
 import { useRouter } from "next/navigation";
@@ -56,13 +56,14 @@ export default function Messages() {
   const [newChatUsers, setNewChatUsers] = useState<string>(""); // usernames separados por coma
 
   const messagesEndRef = useRef(null);
-  const accessToken = sessionStorage.getItem('accessToken');
+  var accessToken = sessionStorage.getItem('accessToken');
 
-  if (!accessToken) {
-    console.error("Token de Acceso no encontrado. Redirigiendo a login.");
-    router.push('/');
-    return;
-  }
+  useEffect(() => {
+    if (!accessToken) {
+      console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+      router.push('/');
+    }
+  }, [accessToken, router]);
 
   /////// FUNCTIONS ///////
 
@@ -90,48 +91,11 @@ export default function Messages() {
     }
   };
 
-
-  // Obtener lista de usuarios desde el backend
-  /*
-  const fetchUser = async () => {
-    try {
-      const resp = await axios.get(
-        `http://localhost:8080/users/${perfil}`,
-        {
-          headers: {
-            // Simplemente enviamos el valor completo "Bearer <token>"
-            'Authorization': accessToken
-          }
-        }
-      );
-      console.log("Usuario obtenido:", resp.data);
-      setUser(resp.data);
-    } catch (err) {
-      // 1. Comprobamos si el error es un error de Axios
-      if (isAxiosError(err)) {
-        console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
-          console.warn("Token expirado o no autorizado. Intentando refrescar...");
-          // Lógica para refrescar el token
-          try {
-            const resp = await axios.get(
-              `http://localhost:8080/auth/refresh`,
-              { withCredentials: true }
-            );
-          } catch (refreshErr) {
-            console.error("Fallo al refrescar el token.", refreshErr);
-          }
-        }
-      } else {
-        console.error("Error desconocido/no-Axios:", err);
-      }
-    }
-  };*/
-
   // Obtain chats from backend
   const fetchChats = async () => {
     try {
-      const resp = await axios.get("http://localhost:8080/chat", {
+      accessToken = sessionStorage.getItem('accessToken');
+      const resp = await axios.get("/api/chat", {
         params: { username: userSession!.username }, // TODO: Que pase el usuario entero? No solo el username (Ns si hará falta)
         headers: {
           // Simplemente enviamos el valor completo "Bearer <token>"
@@ -144,13 +108,18 @@ export default function Messages() {
       // 1. Comprobamos si el error es un error de Axios
       if (isAxiosError(err)) {
         console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
           console.warn("Token expirado o no autorizado. Intentando refrescar...");
           // Lógica para refrescar el token
           try {
             const resp = await axios.post(
-              `http://localhost:8080/auth/refresh`,
-              { withCredentials: true }
+              `/api/auth/refresh`,
+              {
+                withCredentials: true,
+                headers: {
+                  'Authorization': null,
+                }
+              }
             );
             console.log("Respuesta del servidor:", resp.headers);
             const accessToken = resp.headers['authorization'];
@@ -178,13 +147,15 @@ export default function Messages() {
   const handleSend = async () => {
     if (!newMessage.trim() || !activeChat) return;
 
+    accessToken = sessionStorage.getItem('accessToken');
+
     try {
       // Ojo, entiendo que no estas pasando todos los atributos de los objetos (chat, sender), pero sí los necesarios para la base datos
       // Por ejemplo, de sender solo mandas el username, el nombre realmente no hace falta
       // Al recargar la página ya si que asocia todo desde la base de datos
       const messageToSend: Message = {
         chat: { id: activeChat.id, nameChat: "", timestamp: "", users: [] }, // Solo enviamos el id del chat
-        sender: {username: userSession?.username || "", avatar: "", email: "", telephone: 0, biography: "", password: "", roles: []}, // Solo enviamos el username del sender
+        sender: { username: userSession?.username || "", avatar: "", email: "", telephone: 0, biography: "", password: "", roles: [] }, // Solo enviamos el username del sender
         messageContent: newMessage,
         users: [], // Array vacío
       };
@@ -192,7 +163,7 @@ export default function Messages() {
       console.log(accessToken);
 
       // Send to backend (and respond with the created message)
-      const resp = await axios.post("http://localhost:8080/messages", messageToSend, {
+      const resp = await axios.post("/api/messages", messageToSend, {
         headers: {
           // Simplemente enviamos el valor completo "Bearer <token>"
           'Authorization': accessToken
@@ -209,14 +180,18 @@ export default function Messages() {
       // 1. Comprobamos si el error es un error de Axios
       if (isAxiosError(err)) {
         console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
           console.warn("Token expirado o no autorizado. Intentando refrescar...");
           // Lógica para refrescar el token
           try {
             const resp = await axios.post(
-              `http://localhost:8080/auth/refresh`,
-              {},
-              { withCredentials: true }
+              `/api/auth/refresh`,
+              {
+                withCredentials: true,
+                headers: {
+                  'Authorization': null,
+                }
+              }
             );
             console.log("Respuesta del servidor:", resp.headers);
             const accessToken = resp.headers['authorization'];
@@ -242,8 +217,10 @@ export default function Messages() {
 
   // Get list of messages from the backend
   const fetchMessages = async () => {
+
+    accessToken = sessionStorage.getItem('accessToken');
     try {
-      const resp = await axios.get("http://localhost:8080/messages", {
+      const resp = await axios.get("/api/messages", {
         params: { chatId: activeChat?.id },
         headers: {
           // Simplemente enviamos el valor completo "Bearer <token>"
@@ -261,8 +238,13 @@ export default function Messages() {
           // Lógica para refrescar el token
           try {
             const resp = await axios.post(
-              `http://localhost:8080/auth/refresh`,
-              { withCredentials: true }
+              `/api/auth/refresh`,
+              {
+                withCredentials: true,
+                headers: {
+                  'Authorization': null,
+                }
+              }
             );
             console.log("Respuesta del servidor:", resp.headers);
             const accessToken = resp.headers['authorization'];
@@ -288,12 +270,13 @@ export default function Messages() {
 
   // Give a like to a message
   const handleLike = async (message: Message) => {
+    accessToken = sessionStorage.getItem('accessToken');
     try {
       let resp;
 
       if (message.users.some(user => user.username === userSession!.username)) {
         resp = await axios.delete(
-          "http://localhost:8080/messages/like",
+          "/api/messages/like",
           {
             params: {
               messageId: message.id,
@@ -306,8 +289,10 @@ export default function Messages() {
           }
         );
       } else {
+        
+      accessToken = sessionStorage.getItem('accessToken');
         resp = await axios.post(
-          "http://localhost:8080/messages/like",
+          "/api/messages/like",
           null, // No body
           {
             params: {
@@ -330,13 +315,18 @@ export default function Messages() {
       // 1. Comprobamos si el error es un error de Axios
       if (isAxiosError(err)) {
         console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
           console.warn("Token expirado o no autorizado. Intentando refrescar...");
           // Lógica para refrescar el token
           try {
             const resp = await axios.post(
-              `http://localhost:8080/auth/refresh`,
-              { withCredentials: true }
+              `/api/auth/refresh`,
+              {
+                withCredentials: true,
+                headers: {
+                  'Authorization': null,
+                }
+              }
             );
             console.log("Respuesta del servidor:", resp.headers);
             const accessToken = resp.headers['authorization'];
@@ -365,10 +355,11 @@ export default function Messages() {
     usersArray.push(userSession!.username);
     const usersSet = new Set(usersArray);
     usersArray = Array.from(usersSet);
+    accessToken = sessionStorage.getItem('accessToken');
 
     try {
       const resp = await axios.post(
-        "http://localhost:8080/chat",
+        "/api/chat",
         null, // No body
         {
           params: {
@@ -390,13 +381,18 @@ export default function Messages() {
       // 1. Comprobamos si el error es un error de Axios
       if (isAxiosError(err)) {
         console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
           console.warn("Token expirado o no autorizado. Intentando refrescar...");
           // Lógica para refrescar el token
           try {
             const resp = await axios.post(
-              `http://localhost:8080/auth/refresh`,
-              { withCredentials: true }
+              `/api/auth/refresh`,
+              {
+                withCredentials: true,
+                headers: {
+                  'Authorization': null,
+                }
+              }
             );
             console.log("Respuesta del servidor:", resp.headers);
             const accessToken = resp.headers['authorization'];

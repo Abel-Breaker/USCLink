@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 //import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -33,11 +34,17 @@ public class JWTFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException, JwtException {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if(token == null || !token.startsWith("Bearer ")){
+        if (request.getMethod().equals(HttpMethod.OPTIONS.name())) {
             chain.doFilter(request, response);
             return;
         }
 
+        if(token == null || !token.startsWith("Bearer ")){
+            System.out.println("No token provided");
+            chain.doFilter(request, response);
+            return;
+        }
+        
         Authentication authentication = authenticationService.parseJWT(token.replaceFirst("^Bearer ", ""));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 

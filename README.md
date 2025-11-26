@@ -35,14 +35,12 @@ INSERT INTO role_permissions(role, permission) VALUES
 
 TODO LIST:
 Gestor de errores
-Solucionar que puedas ver todos los chats - Abel ¿Está Hecho?
 Comentarios
 Autenticación
-Excepciones tokens (Ánimo dani!)
-Revisar los push para cambiar de página
-
+Callbacks para los mensajes
 Checkear al crear grupo los usuarios - Abel
-
+Cambiar perfil, guardar la resp en una variable y guardar la variable en sessionstorage
 Añadir cerrar sesion
+Revisar recargar página al usar refreshToken
 
 Hecho:

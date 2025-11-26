@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios"; // Para enviar la petición al backend
 import styles from "../page.module.css";
 
@@ -25,7 +25,7 @@ export default function CreatePostsForm() {
     const fetchPosts = async () => {
         try {
             setLoadingPosts(true);
-            const resp = await axios.get("http://localhost:8080/posts");
+            const resp = await axios.get("/api/posts");
             console.log("Publicaciones obtenidas:", resp.data.content);
             setPosts(Array.isArray(resp.data.content) ? resp.data.content : []);
         } catch (err) {
@@ -63,7 +63,7 @@ export default function CreatePostsForm() {
             setLoading(true);
             setError(null);
             const response = await axios.post(
-                "http://localhost:8080/posts", // URL del backend
+                "/api/posts", // URL del backend
                 formDataToSend,
                 {
                     headers: { "Content-Type": "multipart/form-data" }
@@ -150,7 +150,7 @@ export default function CreatePostsForm() {
                                 <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: '#e6eef6' }}>
                                     {u.user?.avatar && (
                                         <img
-                                            src={`http://localhost:8080/media/${encodeURI(u.user.avatar)}`} //TODO: añadir fotos de perfil
+                                            src={`/api/media/${encodeURI(u.user.avatar)}`} //TODO: añadir fotos de perfil
                                             alt="Avatar"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                                         />
@@ -163,7 +163,7 @@ export default function CreatePostsForm() {
                             <div style={{ flex: '0 0 200px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                 {u.pathToFile ? (
                                     <img
-                                        src={`http://localhost:8080/media/${encodeURI(u.pathToFile ?? '')}`}
+                                        src={`/api/media/${encodeURI(u.pathToFile ?? '')}`}
                                         alt="Imagen del post"
                                         style={{
                                             maxWidth: '100%',

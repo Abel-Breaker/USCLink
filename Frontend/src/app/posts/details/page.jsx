@@ -1,33 +1,41 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios";
 import { useSearchParams } from 'next/navigation';
 import Comments from "./Comments";
 import Nav from "../../Nav";
 import { isAxiosError } from "axios";
 import Router from "next/router";
+import styles from "../../page.module.css";
 
 export default function PostDetails() {
   const accessToken = sessionStorage.getItem('accessToken');
+  const perfil = sessionStorage.getItem('perfil');
+  // Estado para almacenar los valores del formulario
+  const [formData, setFormData] = useState({
+    user: "",
+    post: 0,
+    content: "",
+  });
 
   if (!accessToken) {
     console.error("Token de Acceso no encontrado. Redirigiendo a login.");
     Router.push('/');
     return;
   }
-  
+
   const params = useSearchParams();
   const id = params.get('id');
-  const perfil = params.get('perfil');
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchPost = async () => {
+    accessToken = sessionStorage.getItem('accessToken');
     try {
       setLoading(true);
-      const resp = await axios.get(`http://localhost:8080/posts/${id}`, {
+      const resp = await axios.get(`/api/posts/${id}`, {
         headers: {
           'Authorization': accessToken
         }
@@ -39,12 +47,12 @@ export default function PostDetails() {
       // 1. Comprobamos si el error es un error de Axios
       if (isAxiosError(err)) {
         console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
           console.warn("Token expirado o no autorizado. Intentando refrescar...");
           // Lógica para refrescar el token
           try {
             const resp = await axios.post(
-              `http://localhost:8080/auth/refresh`,
+              `/api/auth/refresh`,
               { withCredentials: true }
             );
             console.log("Respuesta del servidor:", resp.headers);
@@ -74,6 +82,48 @@ export default function PostDetails() {
     if (id) fetchPost();
   }, [id]);
 
+  // Función para actualizar el estado cuando el usuario escribe
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Función que se ejecuta al enviar el formulario
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Evita que la página se recargue
+    accessToken = sessionStorage.getItem('accessToken');
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        "/api/comments", // URL del backend
+        {
+          user: {
+            username: perfil, // Aquí podría ser más info si lo tienes
+          },
+          post: {
+            id: Number(post.id),
+          },
+          content: formData.content,
+        },
+        {
+          headers: { "Content-Type": "application/json", "Authorization": accessToken },
+        }
+      );
+      setCreatedComment(response.data);
+
+      // Limpiar formulario
+      setFormData({ user: "", post: "", content: "" });
+
+    } catch (error) {
+      console.error("Error al crear comentario:", error);
+      alert("Hubo un error al enviar los datos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) return <p>Cargando post...</p>;
   if (!post) return <p>No se encontró el post.</p>;
 
@@ -97,7 +147,7 @@ export default function PostDetails() {
         <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: '#e6eef6' }}>
           {post.user?.avatar && (
             <img
-              src={`http://localhost:8080/media/${encodeURI(post.user.avatar)}`}
+              src={`/api/media/${encodeURI(post.user.avatar)}`}
               alt="Avatar"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
@@ -119,7 +169,7 @@ export default function PostDetails() {
       }}>
         {post.pathToFile ? (
           <img
-            src={`http://localhost:8080/media/${encodeURI(post.pathToFile ?? '')}`}
+            src={`/api/media/${encodeURI(post.pathToFile ?? '')}`}
             alt="Imagen del post"
             style={{
               maxWidth: '100%',
@@ -144,14 +194,16 @@ export default function PostDetails() {
         }}
         onDoubleClick={() => {
           if (post.likes?.some(likeUser => likeUser.username === perfil)) {
-            axios.delete(`http://localhost:8080/posts/${post.id}/likes`, { data: { username: perfil }, headers: { 'Authorization': accessToken } })
+            accessToken = sessionStorage.getItem('accessToken');
+            axios.delete(`/api/posts/${post.id}/likes`, { data: { username: perfil }, headers: { 'Authorization': accessToken } })
               .then(() => {
                 console.log("Post disliked");
                 fetchPost();
               })
               .catch(err => console.error("Error al quitar like:", err));
           } else {
-            axios.post(`http://localhost:8080/posts/${post.id}/likes`, { username: perfil }, { headers: { 'Authorization': accessToken } })
+            accessToken = sessionStorage.getItem('accessToken');
+            axios.post(`/api/posts/${post.id}/likes`, { username: perfil }, { headers: { 'Authorization': accessToken } })
               .then(() => {
                 console.log("Post liked");
                 fetchPost();
@@ -180,6 +232,19 @@ export default function PostDetails() {
           {new Date(post.timestamp).toLocaleString()}
         </p>
       </div>
+      <form className={styles["create-form"]} onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="content"
+          placeholder="Contenido del comentario"
+          className={styles["tweet-input"]}
+          value={formData.content}
+          onChange={handleChange}
+        />
+        <button type="submit" className={styles["tweet-button"]}>
+          Comentar
+        </button>
+      </form>
       <Comments id={post.id} perfil={perfil} />
     </div>
   );

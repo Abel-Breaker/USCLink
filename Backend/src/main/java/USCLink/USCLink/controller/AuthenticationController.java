@@ -38,7 +38,7 @@ public class AuthenticationController {
     @PostMapping("login")
     @PreAuthorize("isAnonymous()")
     public ResponseEntity<Void> login(@RequestBody User user) {
-        System.out.println("Logging in user: " + user.getUsername());
+        System.out.println("Logging in user: " + user.getUsername() + " Duration:" + Duration.ofSeconds(10));
         Authentication auth = authentication.login(user);
         String token = authentication.generateJWT(auth);
         String refreshToken = authentication.regenerateRefreshToken(auth);
@@ -49,7 +49,7 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .sameSite(Cookie.SameSite.STRICT.toString())
                 .path(refreshPath)
-                .maxAge(Duration.ofSeconds(10))
+                .maxAge(Duration.ofDays(7))
                 .build();
         System.out.println(cookie.toString());
         return ResponseEntity.noContent()
@@ -65,7 +65,8 @@ public class AuthenticationController {
             @RequestParam("telephone") Long telephone, @RequestParam("avatar") MultipartFile avatar,
             @RequestParam("biography") String biography) throws DuplicatedUserException, Exception {
         System.out.println("Registering user: " + username);
-        User createdUser = users.createUser(username, password, email, telephone, avatar.getOriginalFilename(), biography);
+        User createdUser = users.createUser(username, password, email, telephone, avatar.getOriginalFilename(),
+                biography);
         String uploadsDir = createdUser.getAvatar();
         File destinationFile = new File(uploadsDir);
         destinationFile.getParentFile().mkdirs(); // crea los directorios padre si no existen
@@ -81,13 +82,27 @@ public class AuthenticationController {
     }
 
     @PostMapping("refresh")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAnonymous()")
     public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_TOKEN_COOKIE_NAME) String refreshToken)
             throws Exception {
         Authentication auth = authentication.login(refreshToken);
-
         if (auth.getPrincipal() != null) {
-            return login((User) auth.getPrincipal());
+            String token = authentication.generateJWT(auth);
+            String refresh = authentication.regenerateRefreshToken(auth);
+            String refreshPath = MvcUriComponentsBuilder.fromMethodName(AuthenticationController.class, "refresh", "")
+                    .build().toUri().getPath();
+            ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refresh)
+                    .secure(true) // Si esta a true, no se puede usar en HTTP
+                    .httpOnly(true)
+                    .sameSite(Cookie.SameSite.STRICT.toString())
+                    .path(refreshPath)
+                    .maxAge(Duration.ofDays(7))
+                    .build();
+            System.out.println(cookie.toString());
+            return ResponseEntity.noContent()
+                    .headers(headers -> headers.setBearerAuth(token))
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .build();
         }
         throw new Exception(refreshToken);
     }

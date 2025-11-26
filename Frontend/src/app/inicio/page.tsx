@@ -10,7 +10,7 @@ import Posts from "../Posts";
 import Stats from "../Stats";
 import Recomendations from "../Recomendations";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 
 
 // Define la estructura de los datos de usuario
@@ -24,11 +24,9 @@ interface User {
 
 export default function Home() {
   const router = useRouter();
-  // 1. Obtener los parámetros de búsqueda de la URL
-  const searchParams = useSearchParams();
 
-  // 2. Extraer el valor 'perfil' de los parámetros
-  const perfil = searchParams.get('perfil') || sessionStorage.getItem('perfil');
+  // Extraer el valor 'perfil' de los parámetros
+  const perfil =  sessionStorage.getItem('perfil');
 
   // Lista de usuarios
   const [user, setUser] = useState<User | null>(null);
@@ -46,24 +44,29 @@ export default function Home() {
   const [error, setError] = useState<AxiosError | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Estado para la vista previa de la imagen
+  const [preview, setPreview] = useState<string | null>(null);
+
   // Lista de posts
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  const accessToken = sessionStorage.getItem('accessToken');
+  var accessToken = sessionStorage.getItem('accessToken');
 
-  if (!accessToken) {
-    console.error("Token de Acceso no encontrado. Redirigiendo a login.");
-    router.push('/');
-    return;
-  }
+  useEffect(() => {
+    if (!accessToken) {
+      console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+      router.push('/');
+    }
+  }, [accessToken, router]);
 
   // Obtener lista de usuarios desde el backend
   const fetchUser = async () => {
+    accessToken = sessionStorage.getItem('accessToken');
     try {
       setLoadingUser(true);
       const resp = await axios.get(
-        `http://localhost:8080/users/${perfil}`,
+        `/api/users/${perfil}`,
         {
           headers: {
             // Simplemente enviamos el valor completo "Bearer <token>"
@@ -77,25 +80,26 @@ export default function Home() {
       // 1. Comprobamos si el error es un error de Axios
       if (isAxiosError(err)) {
         console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
           console.warn("Token expirado o no autorizado. Intentando refrescar...");
           // Lógica para refrescar el token
           try {
             const resp = await axios.post(
-              `http://localhost:8080/auth/refresh`,
+              `/api/auth/refresh`,
+              {},
               { withCredentials: true }
             );
             console.log("Respuesta del servidor:", resp.headers);
             const accessToken = resp.headers['authorization'];
 
             if (accessToken) {
-                if (sessionStorage.getItem('accessToken') !== null) {
-                    sessionStorage.removeItem('accessToken');
-                }
-                sessionStorage.setItem('accessToken', accessToken);
-                console.log("Token de Acceso guardado:", accessToken);
-                // Reintentar la solicitud original después de refrescar el token
-                router.refresh();
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              // Reintentar la solicitud original después de refrescar el token
+              router.refresh();
             }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
@@ -110,7 +114,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchUser();
+    if (accessToken) { 
+      fetchUser();
+    }
   }, [accessToken, router]);
 
   // Función para actualizar el estado cuando el usuario escribe
@@ -121,6 +127,13 @@ export default function Home() {
     if (name === "pathToFile" && files) {
       // Almacena el primer archivo de la lista
       setFormData({ ...formData, pathToFile: files[0] as unknown as string });
+
+      // Generar vista previa
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(files[0]);
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -129,7 +142,7 @@ export default function Home() {
   // Función que se ejecuta al enviar el formulario
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Evita que la página se recargue
-
+    accessToken = sessionStorage.getItem('accessToken');
     const formDataToSend = new FormData();
     // El backend espera que el JSON venga como "user" (string)
     formDataToSend.append("user", new Blob([JSON.stringify({ username: perfil })], { type: "application/json" }));
@@ -140,7 +153,7 @@ export default function Home() {
       setLoading(true);
       setError(null);
       const response = await axios.post(
-        "http://localhost:8080/posts", // URL del backend
+        "/api/posts", // URL del backend
         formDataToSend,
         {
           headers: { "Content-Type": "multipart/form-data", 'Authorization': accessToken }
@@ -150,28 +163,29 @@ export default function Home() {
 
       // Limpiar formulario
       setFormData({ user: "", pathToFile: "", caption: "" });
-
+      setPreview(null);
     } catch (err) {
       // 1. Comprobamos si el error es un error de Axios
       if (isAxiosError(err)) {
         console.error("Error de Axios:", err.message);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
           console.warn("Token expirado o no autorizado. Intentando refrescar...");
           // Lógica para refrescar el token
           try {
             const resp = await axios.post(
-              `http://localhost:8080/auth/refresh`,
+              `/api/auth/refresh`,
+              {},
               { withCredentials: true }
             );
             console.log("Respuesta del servidor:", resp.headers);
             const accessToken = resp.headers['authorization'];
 
             if (accessToken) {
-                if (sessionStorage.getItem('accessToken') !== null) {
-                    sessionStorage.removeItem('accessToken');
-                }
-                sessionStorage.setItem('accessToken', accessToken);
-                console.log("Token de Acceso guardado:", accessToken);
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
             }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
@@ -193,7 +207,7 @@ export default function Home() {
         <div className={styles["profile-header"]}>
           <ul>
             <li>
-              <img src={`http://localhost:8080/media/${user?.avatar}`} alt="Avatar" />
+              <img src={`/api/media/${user?.avatar}`} alt="Avatar" />
             </li>
             <li>
               <h2>{perfil}</h2>
@@ -209,6 +223,16 @@ export default function Home() {
             className={styles["tweet-input"]}
             onChange={handleChange}
           />
+          {/* Vista previa de la imagen */}
+          {preview && (
+            <div style={{ marginTop: 12, borderRadius: 8, overflow: 'hidden' }}>
+              <img
+                src={preview}
+                alt="Vista previa"
+                style={{ maxWidth: '100%', maxHeight: 300, objectFit: 'contain' }}
+              />
+            </div>
+          )}
           <input
             type="text"
             name="caption"
