@@ -11,20 +11,17 @@ export default function Stats({ perfil }) {
     const [posts, setPosts] = useState([]);
     const [followedBy, setFollowedBy] = useState([]);
     const [follows, setFollows] = useState([]);
-    var accessToken = sessionStorage.getItem('accessToken');
-
-    if (!accessToken) {
-        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
-        router.push('/');
-        return;
-    }
+    let accessToken = null;
 
     // Obtener lista de usuarios desde el backend
     const fetchPosts = async () => {
         if (!perfil) {
-            console.warn("No perfil proporcionado, no se consultan posts");
-            setPosts([]);
-            return;
+            perfil = sessionStorage.getItem('perfil');
+            if (!perfil) {
+                console.warn("No perfil proporcionado, no se consultan posts");
+                setPosts([]);
+                return;
+            }
         }
         accessToken = sessionStorage.getItem('accessToken');
         try {
@@ -58,7 +55,9 @@ export default function Stats({ perfil }) {
                             }
                             sessionStorage.setItem('accessToken', accessToken);
                             console.log("Token de Acceso guardado:", accessToken);
-                            router.refresh();
+
+                            alert("Token refrescado. La página se recargará para continuar.");
+                            window.location.reload();
                         }
                     } catch (refreshErr) {
                         console.error("Fallo al refrescar el token.", refreshErr);
@@ -109,7 +108,9 @@ export default function Stats({ perfil }) {
                             }
                             sessionStorage.setItem('accessToken', accessToken);
                             console.log("Token de Acceso guardado:", accessToken);
-                            router.refresh();
+
+                            alert("Token refrescado. La página se recargará para continuar.");
+                            window.location.reload();
                         }
                     } catch (refreshErr) {
                         console.error("Fallo al refrescar el token.", refreshErr);
@@ -160,7 +161,9 @@ export default function Stats({ perfil }) {
                             }
                             sessionStorage.setItem('accessToken', accessToken);
                             console.log("Token de Acceso guardado:", accessToken);
-                            router.refresh();
+
+                            alert("Token refrescado. La página se recargará para continuar.");
+                            window.location.reload();
                         }
                     } catch (refreshErr) {
                         console.error("Fallo al refrescar el token.", refreshErr);
@@ -173,10 +176,15 @@ export default function Stats({ perfil }) {
     };
 
     useEffect(() => {
+        accessToken = sessionStorage.getItem('accessToken');
+        if (!accessToken) {
+            console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+            router.push('/');
+            return;
+        }
         fetchPosts();
         fetchFollowedBy();
         fetchFollows();
-
     }, []);
 
 

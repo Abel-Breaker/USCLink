@@ -25,8 +25,7 @@ interface User {
 export default function Home() {
   const router = useRouter();
 
-  // Extraer el valor 'perfil' de los parámetros
-  const perfil =  sessionStorage.getItem('perfil');
+  const [perfil, setPerfil] = useState<string | null>(null);
 
   // Lista de usuarios
   const [user, setUser] = useState<User | null>(null);
@@ -51,22 +50,32 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  var accessToken = sessionStorage.getItem('accessToken');
+  let accessToken = null;
 
   useEffect(() => {
+    accessToken = sessionStorage.getItem('accessToken');
+    const currentPerfil = sessionStorage.getItem('perfil');
+    // Actualiza el estado solo si el valor de sessionStorage es diferente del estado actual
+    if (currentPerfil && currentPerfil !== perfil) {
+      setPerfil(currentPerfil);
+    }
+    console.log("Perfil obtenido en inicio:", perfil);
     if (!accessToken) {
       console.error("Token de Acceso no encontrado. Redirigiendo a login.");
       router.push('/');
+    }else if (currentPerfil){
+      fetchUser();
     }
-  }, [accessToken, router]);
+  }, [perfil, router]);
 
   // Obtener lista de usuarios desde el backend
   const fetchUser = async () => {
     accessToken = sessionStorage.getItem('accessToken');
+    const currentPerfil = sessionStorage.getItem('perfil');
     try {
       setLoadingUser(true);
       const resp = await axios.get(
-        `/api/users/${perfil}`,
+        `/api/users/${currentPerfil}`,
         {
           headers: {
             // Simplemente enviamos el valor completo "Bearer <token>"
@@ -98,8 +107,10 @@ export default function Home() {
               }
               sessionStorage.setItem('accessToken', accessToken);
               console.log("Token de Acceso guardado:", accessToken);
-              // Reintentar la solicitud original después de refrescar el token
-              router.refresh();
+
+              alert("Token refrescado. La página se recargará para continuar.");
+              // Recargar la página entera
+              window.location.reload();
             }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
@@ -112,12 +123,6 @@ export default function Home() {
       setLoadingUser(false);
     }
   };
-
-  useEffect(() => {
-    if (accessToken) { 
-      fetchUser();
-    }
-  }, [accessToken, router]);
 
   // Función para actualizar el estado cuando el usuario escribe
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -142,10 +147,11 @@ export default function Home() {
   // Función que se ejecuta al enviar el formulario
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Evita que la página se recargue
+    const currentPerfil = sessionStorage.getItem('perfil');
     accessToken = sessionStorage.getItem('accessToken');
     const formDataToSend = new FormData();
     // El backend espera que el JSON venga como "user" (string)
-    formDataToSend.append("user", new Blob([JSON.stringify({ username: perfil })], { type: "application/json" }));
+    formDataToSend.append("user", new Blob([JSON.stringify({ username: currentPerfil })], { type: "application/json" }));
     formDataToSend.append("file", formData.pathToFile);
     formDataToSend.append("caption", formData.caption);
 
@@ -187,6 +193,9 @@ export default function Home() {
               sessionStorage.setItem('accessToken', accessToken);
               console.log("Token de Acceso guardado:", accessToken);
             }
+
+            alert("Token refrescado. La página se recargará para continuar.");
+            window.location.reload();
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
           }

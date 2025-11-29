@@ -2,15 +2,13 @@
 
 import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import axios from "axios";
+import { isAxiosError } from "axios";
+import { useRouter } from "next/navigation";
+
 
 
 export default function Comments({ id, perfil }) {
-    const accessToken = sessionStorage.getItem('accessToken');
-    if (!accessToken) {
-        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
-        router.push('/');
-        return;
-    }
+    let accessToken = null;
 
     // Lista de comments
     const [comments, setComments] = useState([]);
@@ -24,6 +22,11 @@ export default function Comments({ id, perfil }) {
             return;
         }
         accessToken = sessionStorage.getItem('accessToken');
+        if (!accessToken) {
+            console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+            router.push('/');
+            return;
+        }
         try {
             setLoadingComments(true);
             const resp = await axios.get("/api/comments", {
@@ -45,6 +48,7 @@ export default function Comments({ id, perfil }) {
                     try {
                         const resp = await axios.post(
                             `/api/auth/refresh`,
+                            {},
                             { withCredentials: true }
                         );
                         console.log("Respuesta del servidor:", resp.headers);
@@ -56,7 +60,8 @@ export default function Comments({ id, perfil }) {
                             }
                             sessionStorage.setItem('accessToken', accessToken);
                             console.log("Token de Acceso guardado:", accessToken);
-                            router.refresh();
+                            alert("Token refrescado. La página se recargará para continuar.");
+                            window.location.reload();
                         }
                     } catch (refreshErr) {
                         console.error("Fallo al refrescar el token.", refreshErr);
@@ -74,6 +79,103 @@ export default function Comments({ id, perfil }) {
         fetchComments();
     }, []);
 
+    const handleLikeToggle = async (comment, e) => {
+        e.preventDefault();
+        if (comment.likes?.some(likeUser => likeUser.username === perfil)) {
+            accessToken = sessionStorage.getItem('accessToken');
+            try {
+                const resp = await axios.delete(
+                    `/api/comments/${comment.id}/likes`,
+                    {
+                        data: { username: perfil },
+                        headers: { 'Authorization': accessToken }
+                    }
+                );
+
+            } catch (err) {
+                // 1. Comprobamos si el error es un error de Axios
+                if (isAxiosError(err)) {
+                    console.error("Error de Axios:", err.message);
+                    if (err.response?.status === 401 || err.response?.status === 403) {
+                        console.warn("Token expirado o no autorizado. Intentando refrescar...");
+                        // Lógica para refrescar el token
+                        try {
+                            const resp = await axios.post(
+                                `/api/auth/refresh`,
+                                {},
+                                { withCredentials: true }
+                            );
+                            console.log("Respuesta del servidor:", resp.headers);
+                            const accessToken = resp.headers['authorization'];
+
+                            if (accessToken) {
+                                if (sessionStorage.getItem('accessToken') !== null) {
+                                    sessionStorage.removeItem('accessToken');
+                                }
+                                sessionStorage.setItem('accessToken', accessToken);
+                                console.log("Token de Acceso guardado:", accessToken);
+
+                                alert("Token refrescado. La página se recargará para continuar.");
+                                window.location.reload();
+                            }
+                        } catch (refreshErr) {
+                            console.error("Fallo al refrescar el token.", refreshErr);
+                        }
+                    }
+                } else {
+                    console.error("Error desconocido/no-Axios:", err);
+                }
+            } finally {
+                fetchComments();
+                comment.likes = comment.likes.filter(likeUser => likeUser.username !== perfil);// Actualiza el estado localmente para reflejar el cambio inmediato
+            }
+        } else {
+            accessToken = sessionStorage.getItem('accessToken');
+            try {
+                const resp = await axios.post(
+                    `/api/comments/${comment.id}/likes`,
+                    { username: perfil },
+                    { headers: { 'Authorization': accessToken } }
+                );
+            } catch (err) {
+                // 1. Comprobamos si el error es un error de Axios
+                if (isAxiosError(err)) {
+                    console.error("Error de Axios:", err.message);
+                    if (err.response?.status === 401 || err.response?.status === 403) {
+                        console.warn("Token expirado o no autorizado. Intentando refrescar...");
+                        // Lógica para refrescar el token
+                        try {
+                            const resp = await axios.post(
+                                `/api/auth/refresh`,
+                                {},
+                                { withCredentials: true }
+                            );
+                            console.log("Respuesta del servidor:", resp.headers);
+                            const accessToken = resp.headers['authorization'];
+
+                            if (accessToken) {
+                                if (sessionStorage.getItem('accessToken') !== null) {
+                                    sessionStorage.removeItem('accessToken');
+                                }
+                                sessionStorage.setItem('accessToken', accessToken);
+                                console.log("Token de Acceso guardado:", accessToken);
+
+                                alert("Token refrescado. La página se recargará para continuar.");
+                                window.location.reload();
+                            }
+                        } catch (refreshErr) {
+                            console.error("Fallo al refrescar el token.", refreshErr);
+                        }
+                    }
+                } else {
+                    console.error("Error desconocido/no-Axios:", err);
+                }
+            } finally {
+                fetchComments();
+                console.log(comment.likes.length);
+            }
+        }
+    }
 
     return (
         <div style={{ padding: 20 }}>
@@ -112,58 +214,7 @@ export default function Comments({ id, perfil }) {
                             </div>
 
                             {/* contenido: ocupa el resto y permite scroll si es necesario */}
-                            <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={() => {
-                                accessToken = sessionStorage.getItem('accessToken');
-                                if (u.likes.some(likeUser => likeUser.username === perfil)) {
-                                    axios.delete(`/api/comments/${u.id}/likes`, {
-                                        data: { username: perfil }, headers: { 'Authorization': accessToken }
-                                    }).then(() => {
-                                        console.log("Comment disliked");
-                                        fetchComments(); // Refrescar comments para actualizar el conteo de likes
-                                    }).catch(err => {
-                                        console.error("Error liking post:", err);
-                                    }); // ya le ha dado like
-                                }
-                                accessToken = sessionStorage.getItem('accessToken');
-                                // Acción de "like" al hacer doble clic
-                                axios.post(`/api/comments/${u.id}/likes`, { username: perfil }, {
-                                    headers: {
-                                        'Authorization': accessToken
-                                    }
-                                }).then(() => {
-                                    console.log("Comment liked");
-                                    fetchComments(); // Refrescar comments para actualizar el conteo de likes
-                                }).catch(err => {
-                                    // 1. Comprobamos si el error es un error de Axios
-                                    if (isAxiosError(err)) {
-                                        console.error("Error de Axios:", err.message);
-                                        if (err.response?.status === 401 || err.response?.status === 403) {
-                                            console.warn("Token expirado o no autorizado. Intentando refrescar...");
-                                            // Lógica para refrescar el token
-                                            try {
-                                                const resp = axios.post(
-                                                    `/api/auth/refresh`,
-                                                    { withCredentials: true }
-                                                );
-                                                console.log("Respuesta del servidor:", resp.headers);
-                                                const accessToken = resp.headers['authorization'];
-
-                                                if (accessToken) {
-                                                    if (sessionStorage.getItem('accessToken') !== null) {
-                                                        sessionStorage.removeItem('accessToken');
-                                                    }
-                                                    sessionStorage.setItem('accessToken', accessToken);
-                                                    console.log("Token de Acceso guardado:", accessToken);
-                                                }
-                                            } catch (refreshErr) {
-                                                console.error("Fallo al refrescar el token.", refreshErr);
-                                            }
-                                        }
-                                    } else {
-                                        console.error("Error desconocido/no-Axios:", err);
-                                    }
-                                });
-                            }}>
+                            <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={(e) => handleLikeToggle(u, e)}>
                                 {u.likes && (
                                     <p style={{ margin: '0 0 8px 0', fontSize: 12, color: 'var(--muted)' }}>
                                         ❤️ {u.likes.length} {u.likes.length === 1 ? 'like' : 'likes'}

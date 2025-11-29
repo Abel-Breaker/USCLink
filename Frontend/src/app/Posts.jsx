@@ -12,21 +12,18 @@ export default function Posts({ perfil }) {
     // Lista de posts
     const [posts, setPosts] = useState([]);
     const [loadingPosts, setLoadingPosts] = useState(false);
-    var accessToken = sessionStorage.getItem('accessToken');
-
-    if (!accessToken) {
-        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
-        router.push('/');
-        return;
-    }
+    let accessToken = null;
 
     // Obtener lista de usuarios desde el backend
     const fetchPosts = async () => {
         accessToken = sessionStorage.getItem('accessToken');
         if (!perfil) {
-            console.warn("No perfil proporcionado, no se consultan posts");
-            setPosts([]);
-            return;
+            perfil = sessionStorage.getItem('perfil');
+            if (!perfil) {
+                console.warn("No perfil proporcionado, no se consultan posts");
+                setPosts([]);
+                return;
+            }
         }
         try {
             setLoadingPosts(true);
@@ -60,7 +57,9 @@ export default function Posts({ perfil }) {
                             }
                             sessionStorage.setItem('accessToken', accessToken);
                             console.log("Token de Acceso guardado:", accessToken);
-                            router.refresh();
+
+                            alert("Token refrescado. La página se recargará para continuar.");
+                            window.location.reload();
                         }
                     } catch (refreshErr) {
                         console.error("Fallo al refrescar el token.", refreshErr);
@@ -75,9 +74,112 @@ export default function Posts({ perfil }) {
     };
 
     useEffect(() => {
+        accessToken = sessionStorage.getItem('accessToken');
+        if (!accessToken) {
+            console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+            router.push('/');
+            return;
+        }
         fetchPosts();
     }, []);
 
+    const handleLikeToggle = async (post, e) => {
+        e.preventDefault();
+        if (post.likes?.some(likeUser => likeUser.username === perfil)) {
+            accessToken = sessionStorage.getItem('accessToken');
+            try {
+                const resp = await axios.delete(
+                    `/api/posts/${post.id}/likes`,
+                    {
+                        data: { username: perfil },
+                        headers: { 'Authorization': accessToken }
+                    }
+                );
+
+            } catch (err) {
+                // 1. Comprobamos si el error es un error de Axios
+                if (isAxiosError(err)) {
+                    console.error("Error de Axios:", err.message);
+                    if (err.response?.status === 401 || err.response?.status === 403) {
+                        console.warn("Token expirado o no autorizado. Intentando refrescar...");
+                        // Lógica para refrescar el token
+                        try {
+                            const resp = await axios.post(
+                                `/api/auth/refresh`,
+                                {},
+                                { withCredentials: true }
+                            );
+                            console.log("Respuesta del servidor:", resp.headers);
+                            const accessToken = resp.headers['authorization'];
+
+                            if (accessToken) {
+                                if (sessionStorage.getItem('accessToken') !== null) {
+                                    sessionStorage.removeItem('accessToken');
+                                }
+                                sessionStorage.setItem('accessToken', accessToken);
+                                console.log("Token de Acceso guardado:", accessToken);
+
+                                alert("Token refrescado. La página se recargará para continuar.");
+                                window.location.reload();
+                            }
+                        } catch (refreshErr) {
+                            console.error("Fallo al refrescar el token.", refreshErr);
+                        }
+                    }
+                } else {
+                    console.error("Error desconocido/no-Axios:", err);
+                }
+            } finally {
+                fetchPosts();
+                post.likes = post.likes.filter(likeUser => likeUser.username !== perfil);// Actualiza el estado localmente para reflejar el cambio inmediato
+            }
+        } else {
+            accessToken = sessionStorage.getItem('accessToken');
+            try {
+                const resp = await axios.post(
+                    `/api/posts/${post.id}/likes`,
+                    { username: perfil },
+                    { headers: { 'Authorization': accessToken } }
+                );
+            } catch (err) {
+                // 1. Comprobamos si el error es un error de Axios
+                if (isAxiosError(err)) {
+                    console.error("Error de Axios:", err.message);
+                    if (err.response?.status === 401 || err.response?.status === 403) {
+                        console.warn("Token expirado o no autorizado. Intentando refrescar...");
+                        // Lógica para refrescar el token
+                        try {
+                            const resp = await axios.post(
+                                `/api/auth/refresh`,
+                                {},
+                                { withCredentials: true }
+                            );
+                            console.log("Respuesta del servidor:", resp.headers);
+                            const accessToken = resp.headers['authorization'];
+
+                            if (accessToken) {
+                                if (sessionStorage.getItem('accessToken') !== null) {
+                                    sessionStorage.removeItem('accessToken');
+                                }
+                                sessionStorage.setItem('accessToken', accessToken);
+                                console.log("Token de Acceso guardado:", accessToken);
+
+                                alert("Token refrescado. La página se recargará para continuar.");
+                                window.location.reload();
+                            }
+                        } catch (refreshErr) {
+                            console.error("Fallo al refrescar el token.", refreshErr);
+                        }
+                    }
+                } else {
+                    console.error("Error desconocido/no-Axios:", err);
+                }
+            } finally {
+                fetchPosts();
+                console.log(post.likes.length);
+            }
+        }
+    }
 
     return (
         <div style={{ padding: 20 }}>
@@ -137,98 +239,7 @@ export default function Posts({ perfil }) {
                             </div>
 
                             {/* contenido: ocupa el resto y permite scroll si es necesario */}
-                            <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={() => {
-                                accessToken = sessionStorage.getItem('accessToken');
-                                if (u.likes.some(likeUser => likeUser.username === perfil)) {
-                                    axios.delete(`/api/posts/${u.id}/likes`, {
-                                        data: { username: perfil }, headers: {
-                                            // Simplemente enviamos el valor completo "Bearer <token>"
-                                            'Authorization': accessToken
-                                        }
-                                    }).then(() => {
-                                        console.log("Post disliked");
-                                        fetchPosts();
-                                    }).catch(err => {
-                                        // 1. Comprobamos si el error es un error de Axios
-                                        if (isAxiosError(err)) {
-                                            console.error("Error de Axios:", err.message);
-                                            if (err.response?.status === 401 || err.response?.status === 403) {
-                                                console.warn("Token expirado o no autorizado. Intentando refrescar...");
-                                                // Lógica para refrescar el token
-                                                try {
-                                                    const resp = axios.post(
-                                                        `/api/auth/refresh`,
-                                                        { withCredentials: true }
-                                                    );
-                                                    console.log("Respuesta del servidor:", resp.headers);
-                                                    const accessToken = resp.headers['authorization'];
-
-                                                    if (accessToken) {
-                                                        if (sessionStorage.getItem('accessToken') !== null) {
-                                                            sessionStorage.removeItem('accessToken');
-                                                        }
-                                                        sessionStorage.setItem('accessToken', accessToken);
-                                                        console.log("Token de Acceso guardado:", accessToken);
-                                                        router.refresh();
-                                                    }
-                                                } catch (refreshErr) {
-                                                    console.error("Fallo al refrescar el token.", refreshErr);
-                                                }
-                                            }
-                                        } else {
-                                            console.error("Error desconocido/no-Axios:", err);
-                                        }
-                                    }); // ya le ha dado like
-                                } else {
-                                    // Acción de "like" al hacer doble clic
-                                    accessToken = sessionStorage.getItem('accessToken');
-                                    console.log("Like post con token:", accessToken);
-                                    console.log("Perfil:", perfil);
-                                    axios.post(
-                                        `/api/posts/${u.id}/likes`,
-                                        { username: perfil }, // body
-                                        { // config
-                                            headers: {
-                                                'Authorization': accessToken,
-                                                'Content-Type': 'application/json'
-                                            }
-                                        }
-                                    ).then(() => {
-                                        console.log("Post liked");
-                                        fetchPosts(); // Refrescar posts para actualizar el conteo de likes
-                                    }).catch(err => {
-                                        // 1. Comprobamos si el error es un error de Axios
-                                        if (isAxiosError(err)) {
-                                            console.error("Error de Axios:", err.message);
-                                            if (err.response?.status === 401 || err.response?.status === 403) {
-                                                console.warn("Token expirado o no autorizado. Intentando refrescar...");
-                                                // Lógica para refrescar el token
-                                                try {
-                                                    const resp = axios.post(
-                                                        `/api/auth/refresh`,
-                                                        { withCredentials: true }
-                                                    );
-                                                    console.log("Respuesta del servidor:", resp.headers);
-                                                    const accessToken = resp.headers['authorization'];
-
-                                                    if (accessToken) {
-                                                        if (sessionStorage.getItem('accessToken') !== null) {
-                                                            sessionStorage.removeItem('accessToken');
-                                                        }
-                                                        sessionStorage.setItem('accessToken', accessToken);
-                                                        console.log("Token de Acceso guardado:", accessToken);
-                                                        router.refresh();
-                                                    }
-                                                } catch (refreshErr) {
-                                                    console.error("Fallo al refrescar el token.", refreshErr);
-                                                }
-                                            }
-                                        } else {
-                                            console.error("Error desconocido/no-Axios:", err);
-                                        }
-                                    });
-                                }
-                            }}>
+                            <div style={{ padding: 12, fontSize: 14, color: 'var(--text)', overflow: 'auto', flex: '1 1 auto' }} onDoubleClick={(e) => handleLikeToggle(u, e)}>
                                 {u.likes && (
                                     <p style={{ margin: '0 0 8px 0', fontSize: 12, color: 'var(--muted)' }}>
                                         ❤️ {u.likes.length} {u.likes.length === 1 ? 'like' : 'likes'}

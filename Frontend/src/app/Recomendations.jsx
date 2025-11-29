@@ -11,20 +11,17 @@ export default function Recomendations({ perfil }) {
     const [recomendations, setRecomendations] = useState([]);
     const [followedBy, setFollowedBy] = useState([]);
     const [follows, setFollows] = useState([]);
-    var accessToken = sessionStorage.getItem('accessToken');
-
-    if (!accessToken) {
-        console.error("Token de Acceso no encontrado. Redirigiendo a login.");
-        router.push('/');
-        return;
-    }
+    let accessToken = null;
 
     // Obtener lista de usuarios desde el backend
     const fetchRecomendations = async () => {
         if (!perfil) {
-            console.warn("No perfil proporcionado, no se consultan recomendations");
-            setRecomendations([]);
-            return;
+            perfil = sessionStorage.getItem('perfil');
+            if (!perfil) {
+                console.warn("No perfil proporcionado, no se consultan recomendations");
+                setRecomendations([]);
+                return;
+            }
         }
         accessToken = sessionStorage.getItem('accessToken');
         try {
@@ -58,7 +55,9 @@ export default function Recomendations({ perfil }) {
                             }
                             sessionStorage.setItem('accessToken', accessToken);
                             console.log("Token de Acceso guardado:", accessToken);
-                            router.refresh();
+
+                            alert("Token refrescado. La página se recargará para continuar.");
+                            window.location.reload();
                         }
                     } catch (refreshErr) {
                         console.error("Fallo al refrescar el token.", refreshErr);
@@ -71,6 +70,12 @@ export default function Recomendations({ perfil }) {
     };
 
     useEffect(() => {
+        accessToken = sessionStorage.getItem('accessToken');
+        if (!accessToken) {
+            console.error("Token de Acceso no encontrado. Redirigiendo a login.");
+            router.push('/');
+            return;
+        }
         fetchRecomendations();
     }, []);
 
@@ -141,7 +146,9 @@ export default function Recomendations({ perfil }) {
                                                         }
                                                         sessionStorage.setItem('accessToken', accessToken);
                                                         console.log("Token de Acceso guardado:", accessToken);
-                                                        router.refresh();
+
+                                                        alert("Token refrescado. La página se recargará para continuar.");
+                                                        window.location.reload();
                                                     }
                                                 } catch (refreshErr) {
                                                     console.error("Fallo al refrescar el token.", refreshErr);

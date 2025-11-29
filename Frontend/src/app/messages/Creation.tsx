@@ -55,9 +55,10 @@ export default function Messages() {
   const [newChatUsers, setNewChatUsers] = useState<string>(""); // usernames separados por coma
 
   const messagesEndRef = useRef(null);
-  var accessToken = sessionStorage.getItem('accessToken');
+  let accessToken = null;
 
   useEffect(() => {
+    accessToken = sessionStorage.getItem('accessToken');
     if (!accessToken) {
       console.error("Token de Acceso no encontrado. Redirigiendo a login.");
       router.push('/');
@@ -129,8 +130,9 @@ export default function Messages() {
               }
               sessionStorage.setItem('accessToken', accessToken);
               console.log("Token de Acceso guardado:", accessToken);
-              // Reintentar la solicitud original después de refrescar el token
-              router.refresh();
+              alert("Token refrescado. La página se recargará para continuar.");
+              // Recargar la página entera
+              window.location.reload();
             }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
@@ -201,8 +203,9 @@ export default function Messages() {
               }
               sessionStorage.setItem('accessToken', accessToken);
               console.log("Token de Acceso guardado:", accessToken);
-              // Reintentar la solicitud original después de refrescar el token
-              router.refresh();
+              alert("Token refrescado. La página se recargará para continuar.");
+              // Recargar la página entera
+              window.location.reload();
             }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
@@ -254,8 +257,9 @@ export default function Messages() {
               }
               sessionStorage.setItem('accessToken', accessToken);
               console.log("Token de Acceso guardado:", accessToken);
-              // Reintentar la solicitud original después de refrescar el token
-              router.refresh();
+              alert("Token refrescado. La página se recargará para continuar.");
+              // Recargar la página entera
+              window.location.reload();
             }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
@@ -336,8 +340,10 @@ export default function Messages() {
               }
               sessionStorage.setItem('accessToken', accessToken);
               console.log("Token de Acceso guardado:", accessToken);
-              // Reintentar la solicitud original después de refrescar el token
-              router.refresh();
+              
+              alert("Token refrescado. La página se recargará para continuar.");
+              // Recargar la página entera
+              window.location.reload();
             }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
@@ -402,8 +408,10 @@ export default function Messages() {
               }
               sessionStorage.setItem('accessToken', accessToken);
               console.log("Token de Acceso guardado:", accessToken);
-              // Reintentar la solicitud original después de refrescar el token
-              router.refresh();
+              
+              alert("Token refrescado. La página se recargará para continuar.");
+              // Recargar la página entera
+              window.location.reload();
             }
           } catch (refreshErr) {
             console.error("Fallo al refrescar el token.", refreshErr);
