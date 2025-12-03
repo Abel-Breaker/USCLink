@@ -3,6 +3,7 @@
 import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import styles from "./page.module.css";
 import axios from "axios";
+import { isAxiosError } from "axios";
 
 
 export default function Stats({ perfil }) {

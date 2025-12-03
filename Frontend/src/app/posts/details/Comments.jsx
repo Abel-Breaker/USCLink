@@ -195,8 +195,7 @@ export default function Comments({ id, perfil }) {
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                height: 360,           // altura fija consistente
-                                minHeight: 360,
+                                height: 200,           // altura fija consistente
                             }}
                         >
                             {/* header: avatar + user */}

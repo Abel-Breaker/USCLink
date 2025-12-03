@@ -120,7 +120,7 @@ export default function PostDetails() {
       // Limpiar formulario
       setFormData({ user: "", post: "", content: "" });
 
-    } catch (error) {
+    } catch (err) {
       // 1. Comprobamos si el error es un error de Axios
       if (isAxiosError(err)) {
         console.error("Error de Axios:", err.message);
@@ -272,8 +272,8 @@ export default function PostDetails() {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        width: 400,
-        margin: '20px auto'
+        width: 600,
+        margin: '10px auto'
       }}
     >
       <Nav></Nav>

@@ -25,7 +25,7 @@
   :root {
     /* 🌙 MODO OSCURO */
     --bg: #0a0a0a;          /* negro muy oscuro */
-    --card: #161616;        /* gris oscuro para tarjetas */
+    --card: #161616a1;        /* gris oscuro para tarjetas */
     --text: #f5f5f5;        /* texto blanco suave */
     --muted: #a0a0a0;       /* texto secundario gris claro */
     --border: #2b2b2b;      /* bordes oscuros sutiles */

@@ -37,7 +37,7 @@ public class AuthenticationService {
     private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Value("${auth.jwt.ttl:PT10S}")
+    @Value("${auth.jwt.ttl:PT1M}")
     private Duration tokenTTL;
 
     @Value("${auth.refresh.ttl:PT72H}")
@@ -59,7 +59,7 @@ public class AuthenticationService {
 
     public Authentication login(User user) throws AuthenticationException {
         System.out
-                .println("Attempting login for user: " + user.getUsername() + " with password: " + user.getPassword());
+                .println("Attempting login for user: " + user.getUsername());
         return authenticationManager.authenticate(
                 UsernamePasswordAuthenticationToken.unauthenticated(user.getUsername(), user.getPassword()));
     }

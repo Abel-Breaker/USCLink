@@ -2,6 +2,15 @@
 Necesario:
 npm install react-router-dom
 
+Swagger:
+http://localhost:8080/api/swagger-ui/index.html#/
+
+Backend:
+./gradlew bootRun 
+
+Frontend:
+npm run dev 
+
 Meter datos a las tablas de permisos, roles y demás; para que funcione la autenticación
 
 INSERT INTO permissions(id, resource, action) VALUES
@@ -34,13 +43,9 @@ INSERT INTO role_permissions(role, permission) VALUES
 
 
 TODO LIST:
-Gestor de errores
-Comentarios
-Autenticación
-Callbacks para los mensajes
+Callbacks para los mensajes (Opcional)
 Checkear al crear grupo los usuarios - Abel
-Cambiar perfil, guardar la resp en una variable y guardar la variable en sessionstorage
-Añadir cerrar sesion
-Revisar recargar página al usar refreshToken
+Usar la paginación en los gets
+Completar explicaciones para swagger
 
 Hecho:

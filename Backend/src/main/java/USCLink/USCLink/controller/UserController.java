@@ -85,5 +85,16 @@ class UserController {
                     .build();
         }
     }
+
+    @DeleteMapping("{username}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> deleteUser(@PathVariable("username") String username) {
+        try {
+            userService.deleteUser(username);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
 

@@ -12,6 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 
 @Entity
@@ -50,7 +51,6 @@ public class User  implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role"))
     @JsonView(Views.Private.class)
     private Set<Role> roles;
-
 
     public User() {
     }

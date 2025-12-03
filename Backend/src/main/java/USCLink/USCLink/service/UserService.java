@@ -78,4 +78,9 @@ public class UserService implements UserDetailsService {
         return loadUserByUsername(username);
     }
 
+    public void deleteUser(String username) {
+        User user = loadUserByUsername(username);
+        userRepository.delete(user);
+    }
+
 }
