@@ -140,7 +140,6 @@ public class PostController {
     public ResponseEntity<Post> updatePost(@PathVariable("id") Long id, @RequestBody List<JsonPatchOperation> changes, Authentication authentication)
             throws FileNotSavedException, JsonPatchFailedException, AccessDeniedException {
         try {
-            System.out.println("User " + authentication.getName() + " is updating post ID " + id);
             if (!postService.getCoincidentPostsById(id).iterator().next().getUser().getUsername().equals(authentication.getName())) {
                 throw new AccessDeniedException(authentication.getName());
             }

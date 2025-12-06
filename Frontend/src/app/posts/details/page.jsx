@@ -264,7 +264,6 @@ export default function PostDetails() {
   const handlePatch = async (e) => {
     e.preventDefault();
     let accessToken = sessionStorage.getItem('accessToken');
-    console.log(accessToken);
     try {
       setLoading(true);
       const patchOperations = [
@@ -274,12 +273,11 @@ export default function PostDetails() {
           value: newCaption
         }
       ];
-      console.log(patchOperations);
       const resp = await axios.patch(
         `/api/posts/${post.id}`,
         patchOperations,
         {
-          headers: { 'Content-Type': 'application/json-patch+json', 'Authorization': accessToken }
+          headers: { 'Content-Type': 'application/json-patch+json', 'Authorization': `${accessToken}` }
         }
       );
       alert("Post modificado correctamente.");
