@@ -25,4 +25,5 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     // Buscar posts por id
     java.util.Set<Post> findAllById(Long id);
+    
 }

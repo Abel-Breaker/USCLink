@@ -162,7 +162,7 @@ export default function Home() {
         "/api/posts", // URL del backend
         formDataToSend,
         {
-          headers: { "Content-Type": "multipart/form-data", 'Authorization': accessToken }
+          headers: { "Content-Type": "multipart/form-data", 'Authorization': accessToken}
         }
       );
       setCreatedPost(response.data);

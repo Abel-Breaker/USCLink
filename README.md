@@ -45,7 +45,6 @@ INSERT INTO role_permissions(role, permission) VALUES
 TODO LIST:
 Callbacks para los mensajes (Opcional)
 Checkear al crear grupo los usuarios - Abel
-Usar la paginación en los gets
 Completar explicaciones para swagger
 
 Hecho:

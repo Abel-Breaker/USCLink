@@ -3,6 +3,10 @@ package USCLink.USCLink.controller;
 import USCLink.USCLink.model.Post;
 import USCLink.USCLink.model.User;
 import USCLink.USCLink.service.PostService;
+import USCLink.utils.patch.JsonPatchOperation;
+import USCLink.utils.patch.exception.JsonPatchFailedException;
+import USCLink.USCLink.exception.FileNotSavedException;
+import USCLink.USCLink.exception.PostNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/posts")
 public class PostController {
@@ -33,7 +36,8 @@ public class PostController {
     // Endpoint para subir archivo
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> uploadFile(@RequestPart("user") User user, @RequestPart("file") MultipartFile file, @RequestPart(value = "caption", required = false) String caption) {
+    public ResponseEntity<String> uploadFile(@RequestPart("user") User user, @RequestPart("file") MultipartFile file,
+            @RequestPart(value = "caption", required = false) String caption) throws FileNotSavedException {
         try {
 
             if (file.isEmpty()) {
@@ -56,18 +60,18 @@ public class PostController {
             return ResponseEntity.ok("File saved at: " + newPost.getPathToFile());
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Error saving file.");
+            throw new FileNotSavedException(file.getOriginalFilename());
         }
     }
 
-    @GetMapping
+    @GetMapping(headers = "API-Version=v1")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<Post>> getPosts(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
             @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort,
             @RequestParam(value = "followedBy", required = false, defaultValue = "") String followedBy,
-            @RequestParam(value = "perfil", required = false, defaultValue = "") User perfil){
+            @RequestParam(value = "perfil", required = false, defaultValue = "") User perfil) {
         if (!followedBy.isEmpty()) {
             return ResponseEntity.ok(postService.getPostsFollowedByUser(followedBy, PageRequest.of(page, pagesize,
                     Sort.by("timestamp").descending())));
@@ -75,10 +79,31 @@ public class PostController {
         if (perfil != null) {
             return ResponseEntity.ok(postService.getPostsByUserUsername(perfil, PageRequest.of(page, pagesize,
                     Sort.by("timestamp").descending())));
-            
+
         }
         return ResponseEntity.ok(postService.getPosts(PageRequest.of(page, pagesize,
                 Sort.by("timestamp").descending())));
+    }
+
+    @GetMapping(headers = "API-Version=v2")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Page<Post>> getPostsAscending(
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") int pagesize,
+            @RequestParam(value = "sort", required = false, defaultValue = "") List<String> sort,
+            @RequestParam(value = "followedBy", required = false, defaultValue = "") String followedBy,
+            @RequestParam(value = "perfil", required = false, defaultValue = "") User perfil) {
+        if (!followedBy.isEmpty()) {
+            return ResponseEntity.ok(postService.getPostsFollowedByUser(followedBy, PageRequest.of(page, pagesize,
+                    Sort.by("timestamp").ascending())));
+        }
+        if (perfil != null) {
+            return ResponseEntity.ok(postService.getPostsByUserUsername(perfil, PageRequest.of(page, pagesize,
+                    Sort.by("timestamp").ascending())));
+
+        }
+        return ResponseEntity.ok(postService.getPosts(PageRequest.of(page, pagesize,
+                Sort.by("timestamp").ascending())));
     }
 
     @GetMapping("{id}")
@@ -106,5 +131,34 @@ public class PostController {
         this.postService.dislikePost(post, user);
         return ResponseEntity.ok("Post disliked successfully.");
     }
-    
+
+    @PatchMapping("{id}")
+    public ResponseEntity<Post> updatePost(@PathVariable("id") Long id, @RequestBody List<JsonPatchOperation> changes)
+            throws FileNotSavedException {
+        try {
+            return ResponseEntity.ok(postService.updatePost(id, changes));
+        } catch (PostNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id) throws PostNotFoundException {
+
+        Post post = postService.getCoincidentPostsById(id).iterator().next();
+        if (post == null) {
+            throw new PostNotFoundException(id);
+        }
+        String deleteDir = post.getPathToFile();
+        File deleteFile = new File(deleteDir);
+        if (deleteFile.delete()) {
+            System.out.println("Deleted file: " + deleteDir);
+        } else {
+            System.out.println("Failed to delete file: " + deleteDir);
+        }
+        postService.deletePost(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

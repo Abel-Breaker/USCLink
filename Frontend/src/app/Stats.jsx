@@ -30,7 +30,7 @@ export default function Stats({ perfil }) {
                 params: { perfil: perfil },
                 headers: {
                     // Simplemente enviamos el valor completo "Bearer <token>"
-                    'Authorization': accessToken
+                    'Authorization': accessToken, "API-Version": 'v1'
                 }
             });
             console.log("Publicaciones obtenidas en las estadísticas:", resp.data.content);
