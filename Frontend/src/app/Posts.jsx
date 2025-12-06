@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
 
 
-export default function Posts({ perfil }) {
+export default function Posts({ perfil, version }) {
     const router = useRouter();
 
     // Lista de posts
@@ -31,7 +31,7 @@ export default function Posts({ perfil }) {
                 params: { followedBy: perfil },
                 headers: {
                     // Simplemente enviamos el valor completo "Bearer <token>"
-                    'Authorization': accessToken, "API-Version": 'v1' 
+                    'Authorization': accessToken, "API-Version": version 
                 }
             });
             console.log("Publicaciones obtenidas:", resp.data.content);

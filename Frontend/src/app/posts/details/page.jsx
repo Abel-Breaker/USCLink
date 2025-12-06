@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, useRef, use } from "react";
 import axios from "axios";
 import { useSearchParams } from 'next/navigation';
 import Comments from "./Comments";
@@ -8,9 +8,12 @@ import Nav from "../../Nav";
 import { isAxiosError } from "axios";
 import Router from "next/router";
 import styles from "../../page.module.css";
+import path from "path";
+import { useRouter } from "next/navigation";
 
 export default function PostDetails() {
   let accessToken = null;
+  const router = useRouter();
   const [perfil, setPerfil] = useState(null);
   // Estado para almacenar los valores del formulario
   const [formData, setFormData] = useState({
@@ -24,6 +27,7 @@ export default function PostDetails() {
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [newCaption, setNewCaption] = useState("");
 
   const fetchPost = async () => {
     accessToken = sessionStorage.getItem('accessToken') || null;
@@ -257,6 +261,115 @@ export default function PostDetails() {
     }
   }
 
+  const handlePatch = async (e) => {
+    e.preventDefault();
+    let accessToken = sessionStorage.getItem('accessToken');
+    console.log(accessToken);
+    try {
+      setLoading(true);
+      const patchOperations = [
+        {
+          op: "replace",
+          path: "/caption",
+          value: newCaption
+        }
+      ];
+      console.log(patchOperations);
+      const resp = await axios.patch(
+        `/api/posts/${post.id}`,
+        patchOperations,
+        {
+          headers: { 'Content-Type': 'application/json-patch+json', 'Authorization': accessToken }
+        }
+      );
+      alert("Post modificado correctamente.");
+      await fetchPost();
+    } catch (err) {
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `/api/auth/refresh`,
+              {},
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+            if (accessToken) {
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              alert("Token refrescado. La página se recargará para continuar.");
+              window.location.reload();
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    accessToken = sessionStorage.getItem('accessToken');
+    console.log(accessToken);
+    try {
+      setLoading(true);
+      const resp = await axios.delete(
+        `/api/posts/${post.id}`,
+        {
+          headers: { 'Authorization': accessToken }
+        }
+      );
+      alert("Post eliminado correctamente.");
+      router.push('/inicio');
+      return;
+    } catch (err) {
+      // 1. Comprobamos si el error es un error de Axios
+      if (isAxiosError(err)) {
+        console.error("Error de Axios:", err.message);
+        if (err.response?.status === 401) {
+          console.warn("Token expirado o no autorizado. Intentando refrescar...");
+          // Lógica para refrescar el token
+          try {
+            const resp = await axios.post(
+              `/api/auth/refresh`,
+              { withCredentials: true }
+            );
+            console.log("Respuesta del servidor:", resp.headers);
+            const accessToken = resp.headers['authorization'];
+            if (accessToken) {
+              if (sessionStorage.getItem('accessToken') !== null) {
+                sessionStorage.removeItem('accessToken');
+              }
+              sessionStorage.setItem('accessToken', accessToken);
+              console.log("Token de Acceso guardado:", accessToken);
+              alert("Token refrescado. La página se recargará para continuar.");
+              window.location.reload();
+            }
+          } catch (refreshErr) {
+            console.error("Fallo al refrescar el token.", refreshErr);
+          }
+        }
+      } else {
+        console.error("Error desconocido/no-Axios:", err);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) return <p>Cargando post...</p>;
   if (!post) return <p>No se encontró el post.</p>;
 
@@ -291,6 +404,13 @@ export default function PostDetails() {
         <div style={{ fontWeight: 600, color: 'var(--text)' }}>
           {post.user?.username ?? '-'}
         </div>
+        {post.user.username === perfil ? (
+          <button style={{ marginLeft: 'auto', cursor: 'pointer' }} onClick={handleDelete}>
+            Borrar
+          </button>
+        ) : (
+          null
+        )}
       </div>
 
       {/* Imagen */}
@@ -343,6 +463,16 @@ export default function PostDetails() {
           <p style={{ margin: 0, color: 'var(--muted)' }}>
             <b>{post.user.username} </b>Sin descripción
           </p>
+        )}
+        {post.user.username == perfil ? (
+          <form>
+            <input name="newCaption" value={newCaption} onChange={e => setNewCaption(e.target.value)} />
+            <button style={{ marginLeft: 'auto', cursor: 'pointer' }} onClick={handlePatch}>
+              Modificar
+            </button>
+          </form>
+        ) : (
+          null
         )}
 
         <p style={{ margin: '8px 0 0 0', fontSize: 10, color: 'var(--muted)' }}>

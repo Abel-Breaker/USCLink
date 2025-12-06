@@ -7,6 +7,7 @@ import USCLink.utils.patch.JsonPatchOperation;
 import USCLink.utils.patch.exception.JsonPatchFailedException;
 import USCLink.USCLink.exception.FileNotSavedException;
 import USCLink.USCLink.exception.PostNotFoundException;
+import USCLink.USCLink.exception.AccessDeniedException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 
 import java.io.File;
 import java.io.IOException;
@@ -133,9 +136,14 @@ public class PostController {
     }
 
     @PatchMapping("{id}")
-    public ResponseEntity<Post> updatePost(@PathVariable("id") Long id, @RequestBody List<JsonPatchOperation> changes)
-            throws FileNotSavedException {
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Post> updatePost(@PathVariable("id") Long id, @RequestBody List<JsonPatchOperation> changes, Authentication authentication)
+            throws FileNotSavedException, JsonPatchFailedException, AccessDeniedException {
         try {
+            System.out.println("User " + authentication.getName() + " is updating post ID " + id);
+            if (!postService.getCoincidentPostsById(id).iterator().next().getUser().getUsername().equals(authentication.getName())) {
+                throw new AccessDeniedException(authentication.getName());
+            }
             return ResponseEntity.ok(postService.updatePost(id, changes));
         } catch (PostNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -144,11 +152,15 @@ public class PostController {
 
     @DeleteMapping("{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id) throws PostNotFoundException {
-
+    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id, Authentication authentication)
+            throws PostNotFoundException, AccessDeniedException {
+                System.out.println("Deleting post ID " + id);
         Post post = postService.getCoincidentPostsById(id).iterator().next();
         if (post == null) {
             throw new PostNotFoundException(id);
+        }
+        if (!post.getUser().getUsername().equals(authentication.getName())) {
+          throw new AccessDeniedException(authentication.getName());
         }
         String deleteDir = post.getPathToFile();
         File deleteFile = new File(deleteDir);

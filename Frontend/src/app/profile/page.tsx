@@ -258,7 +258,7 @@ export default function Home() {
         <Stats perfil={perfil} />
 
         {/* Posts */}
-        <Posts perfil={perfil} version={"v1"}/>
+        <Posts perfil={perfil} version={"v2"} />
       </div>
       <footer className={styles.footer}>
         <Recomendations perfil={perfil} />
