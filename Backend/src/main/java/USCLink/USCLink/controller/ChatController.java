@@ -16,7 +16,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
+
+@Tag(
+    name = "Chats", 
+    description = "Operations related to user chats, including creating and retrieving chats." 
+)
 @RestController
 @RequestMapping("/chat")
 public class ChatController {
@@ -30,6 +37,10 @@ public class ChatController {
         this.userService = userService;
     }
 
+    @Operation(
+        summary = "Gets a list of chats for a user, paginated",
+        description = "Retrieves a paginated list of chats for a specified user."
+    )
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public Page<Chat> getChats(
@@ -40,6 +51,10 @@ public class ChatController {
         return chatService.getAllChatsFromUser(username, PageRequest.of(page, size));
     }
 
+    @Operation(
+        summary = "Creates a new chat group",
+        description = "Creates a new chat group with a specified name and list of users."
+    )
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> createGroup(@RequestParam String nameChat, @RequestParam List<String> users) {

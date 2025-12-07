@@ -16,12 +16,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import java.io.File;
 import java.time.Duration;
 import java.util.Set;
 
 //@NullMarked
+@Tag(
+    name = "Authentication", 
+    description = "Operations related to user authentication, including login, registration, token refresh, and logout." 
+)
 @RestController
 @RequestMapping("auth")
 public class AuthenticationController {
@@ -35,6 +40,10 @@ public class AuthenticationController {
                 this.users = users;
         }
 
+        @Operation(
+                summary = "Logs in a user",
+                description = "Authenticates a user with their username and password, returning a JWT token and setting a refresh token cookie."
+        )
         @PostMapping("login")
         @PreAuthorize("isAnonymous()")
         public ResponseEntity<Void> login(@RequestBody User user) {
@@ -59,6 +68,10 @@ public class AuthenticationController {
                                 .build();
         }
 
+        @Operation(
+                summary = "Registers a new user",
+                description = "Creates a new user account with the provided details and avatar image."
+        )
         @PostMapping("register")
         @PreAuthorize("isAnonymous()")
         public ResponseEntity<User> register(@RequestParam("username") String username,
@@ -83,6 +96,10 @@ public class AuthenticationController {
                                 .body(createdUser);
         }
 
+        @Operation(
+                summary = "Refreshes JWT token",
+                description = "Generates a new JWT token and refresh token using the provided refresh token cookie."
+        )
         @PostMapping("refresh")
         @PreAuthorize("isAnonymous()")
         public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_TOKEN_COOKIE_NAME) String refreshToken)
@@ -110,6 +127,10 @@ public class AuthenticationController {
                 throw new Exception(refreshToken);
         }
 
+        @Operation(
+                summary = "Logs out a user",
+                description = "Invalidates the user's tokens and clears the refresh token cookie."
+        )
         @PostMapping("logout")
         @PreAuthorize("isAuthenticated()")
         public ResponseEntity<Void> logout(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {

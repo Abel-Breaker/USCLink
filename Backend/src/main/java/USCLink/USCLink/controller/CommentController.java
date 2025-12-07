@@ -13,9 +13,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
+@Tag(
+    name = "Comments", 
+    description = "Operations related to user comments, including creating, retrieving, liking, and disliking comments." 
+)
 @RestController
 @RequestMapping("/comments")
 public class CommentController {
@@ -27,6 +33,10 @@ public class CommentController {
         this.commentService = commentService;
     }
 
+    @Operation(
+        summary = "Gets a list of comments, paginated",
+        description = "Retrieves a paginated list of comments. Optional query parameters allow filtering by post ID and specifying page size."
+    )
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<Comment>> getComments(
@@ -42,6 +52,10 @@ public class CommentController {
                 Sort.by("id"))));
     }
 
+    @Operation(
+        summary = "Gets a specific comment by ID",
+        description = "Using a specified comment ID, retrieves the corresponding comment if it exists."
+    )
     @GetMapping("{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Comment> getComment(@PathVariable("id") Long id) {
@@ -52,6 +66,10 @@ public class CommentController {
         }
     }
 
+    @Operation(
+        summary = "Creates a new comment",
+        description = "Creates a new comment on a specific post."
+    )
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Comment> addComment(@RequestBody Comment comment) {
@@ -73,6 +91,10 @@ public class CommentController {
         }
     }
 
+    @Operation(
+        summary = "Likes a specific comment",
+        description = "Allows a user to like a specific comment by its ID."
+    )
     @PostMapping("/{id}/likes")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> likeComment(@PathVariable("id") Long comment, @RequestBody User user) {
@@ -81,6 +103,10 @@ public class CommentController {
         return ResponseEntity.ok("Comment liked successfully.");
     }
 
+    @Operation(
+        summary = "Dislikes a specific comment",
+        description = "Allows a user to dislike (remove like) from a specific comment by its ID."
+    )
     @DeleteMapping("/{id}/likes")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> dislikeComment(@PathVariable("id") Long comment, @RequestBody User user) {

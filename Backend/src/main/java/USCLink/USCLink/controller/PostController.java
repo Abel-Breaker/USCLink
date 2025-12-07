@@ -20,11 +20,17 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+@Tag(
+    name = "Posts", 
+    description = "Operations related to user posts, including uploading, retrieving, liking, and deleting posts." 
+)
 @RestController
 @RequestMapping("/posts")
 public class PostController {
@@ -37,6 +43,10 @@ public class PostController {
     }
 
     // Endpoint para subir archivo
+    @Operation(
+        summary = "Uploads a new post with a file",
+        description = "Uploads a new post associated with a user, saving the file to the file system and creating a post record."
+    )
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> uploadFile(@RequestPart("user") User user, @RequestPart("file") MultipartFile file,
@@ -67,6 +77,10 @@ public class PostController {
         }
     }
 
+    @Operation(
+        summary = "Gets a list of posts, paginated",
+        description = "Retrieves a paginated list of posts. Optional query parameters allow filtering by followed users or specific user profile."
+    )
     @GetMapping(headers = "API-Version=v1")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<Post>> getPosts(
@@ -88,6 +102,10 @@ public class PostController {
                 Sort.by("timestamp").descending())));
     }
 
+    @Operation(
+        summary = "Gets a list of posts in ascending order, paginated",
+        description = "Retrieves a paginated list of posts sorted in ascending order, the older posts are retrieved first. Optional query parameters allow filtering by followed users or specific user profile."
+    )
     @GetMapping(headers = "API-Version=v2")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<Post>> getPostsAscending(
@@ -109,6 +127,10 @@ public class PostController {
                 Sort.by("timestamp").ascending())));
     }
 
+    @Operation(
+        summary = "Gets a specific post by ID",
+        description = "Using a specified post ID, retrieves the corresponding post if it exists."
+    )
     @GetMapping("{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Post> getPost(@PathVariable("id") Long id) {
@@ -119,6 +141,10 @@ public class PostController {
         }
     }
 
+    @Operation(
+        summary = "Likes a specific post",
+        description = "Allows a user to like a specific post by its ID."
+    )
     @PostMapping("/{id}/likes")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> likePost(@PathVariable("id") Long post, @RequestBody User user) {
@@ -127,6 +153,10 @@ public class PostController {
         return ResponseEntity.ok("Post liked successfully.");
     }
 
+    @Operation(
+        summary = "Dislikes a specific post",
+        description = "Allows a user to dislike (remove like) from a specific post by its ID."
+    )
     @DeleteMapping("/{id}/likes")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> dislikePost(@PathVariable("id") Long post, @RequestBody User user) {
@@ -135,6 +165,10 @@ public class PostController {
         return ResponseEntity.ok("Post disliked successfully.");
     }
 
+    @Operation(
+        summary = "Updates a specific post",
+        description = "Applies a list of JSON Patch operations to update a specific post by its ID."
+    )
     @PatchMapping("{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Post> updatePost(@PathVariable("id") Long id, @RequestBody List<JsonPatchOperation> changes, Authentication authentication)
@@ -149,6 +183,10 @@ public class PostController {
         }
     }
 
+    @Operation(
+        summary = "Deletes a specific post",
+        description = "Deletes a specific post by its ID if the authenticated user is the owner of the post."
+    )
     @DeleteMapping("{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> deletePost(@PathVariable("id") Long id, Authentication authentication)

@@ -10,8 +10,5 @@ Frontend:
 npm run dev 
 
 TODO LIST:
-Patch
-Retry
-Swagger
 
 Hecho:

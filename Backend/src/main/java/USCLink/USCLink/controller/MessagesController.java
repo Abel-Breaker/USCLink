@@ -10,9 +10,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.Instant;
 
+@Tag(
+    name = "Messages", 
+    description = "Operations related to messaging between users" 
+)
 @RestController
 @RequestMapping("/messages")
 public class MessagesController {
@@ -25,6 +31,10 @@ public class MessagesController {
         this.messageService = messageService;
     }
 
+    @Operation(
+        summary = "Gets a list of messages in a chat, paginated",
+        description = "Retrieves a paginated list of messages for a specific chat. Optional query parameters allow specifying page size and sorting."
+    )
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public Page<Message> getMessages(
@@ -39,6 +49,10 @@ public class MessagesController {
         );
     }
 
+    @Operation(
+        summary = "Sends a new message",
+        description = "Sends a new message in a specific chat."
+    )
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Message> sendMessage(@RequestBody Message message) {
@@ -49,6 +63,10 @@ public class MessagesController {
         return ResponseEntity.ok(message);
     }
 
+    @Operation(
+        summary = "Likes a specific message",
+        description = "Allows a user to like a specific message by its ID."
+    )
     @PostMapping("/like")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> likeMessage(@RequestParam Long messageId, @RequestParam String username) {
@@ -56,6 +74,10 @@ public class MessagesController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(
+        summary = "Unlikes a specific message",
+        description = "Allows a user to remove their like from a specific message by its ID."
+    )
     @DeleteMapping("/like")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> unlikeMessage(@RequestParam Long messageId, @RequestParam String username) {

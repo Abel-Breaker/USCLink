@@ -19,7 +19,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Service;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+
 
 import java.security.KeyPair;
 import java.time.Duration;
@@ -28,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthenticationService {
@@ -57,9 +63,10 @@ public class AuthenticationService {
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
+    @Bulkhead(name = "loginConcurrency", type = Bulkhead.Type.SEMAPHORE)
+    @Retry(name = "loginRetry", fallbackMethod = "handleLoginFailure") // Usa @Retry
     public Authentication login(User user) throws AuthenticationException {
-        System.out
-                .println("Attempting login for user: " + user.getUsername());
+        System.out.println("Attempting login for user: " + user.getUsername());
         return authenticationManager.authenticate(
                 UsernamePasswordAuthenticationToken.unauthenticated(user.getUsername(), user.getPassword()));
     }

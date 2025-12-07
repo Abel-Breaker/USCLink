@@ -16,12 +16,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import USCLink.USCLink.repository.RoleRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 
 import java.util.Set;
 import java.io.File;
 import java.util.List;
 
+@Tag(
+    name = "Users", 
+    description = "Operations related to user management, including creation, retrieval, and deletion of users." 
+)
 @RestController
 @RequestMapping("users")
 class UserController {
@@ -34,6 +40,10 @@ class UserController {
         this.userService = userService;
     }
 
+    @Operation(
+            summary = "Gets a specific user by the username",
+            description = "Using a specified username, retrieves the corresponding user if it exists."
+    )
     @GetMapping("{username}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<User> getUser(@PathVariable("username") String username) {
@@ -44,6 +54,10 @@ class UserController {
         }
     }
 
+    @Operation(
+            summary = "Gets a number of users, paginated",
+            description = "Retrieves a paginated list of users. Optional query parameters allow for sorting, filtering by username, and specifying page size."
+    )
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<User>> getUsers(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
@@ -60,7 +74,10 @@ class UserController {
     }
 
 
-
+    @Operation(
+            summary = "Creates a new user",
+            description = "Creates a new user with the provided details and avatar image. It saves the avatar to the file system."
+    )
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> addUser(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, @RequestParam("telephone") Long telephone, @RequestParam("avatar") MultipartFile avatar, @RequestParam("biography") String biography) throws DuplicatedUserException, RuntimeException {
         try{
@@ -86,6 +103,10 @@ class UserController {
         }
     }
 
+    @Operation(
+            summary = "Deletes a user by username",
+            description = "Deletes the user associated with the specified username."
+    )
     @DeleteMapping("{username}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> deleteUser(@PathVariable("username") String username) {

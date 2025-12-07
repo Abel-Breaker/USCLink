@@ -13,9 +13,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 
+@Tag(
+    name = "Follows", 
+    description = "Operations related to user follows, including creating and retrieving follow relationships." 
+)
 @RestController
 @RequestMapping("/follows")
 public class FollowController {
@@ -27,6 +32,10 @@ public class FollowController {
         this.followService = followService;
     }
 
+    @Operation(
+        summary = "Gets a list of follows, paginated",
+        description = "Retrieves a paginated list of follow relationships. Optional query parameters allow filtering by followed or follower username."
+    )
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<Follow>> getFollows(
@@ -46,6 +55,10 @@ public class FollowController {
                 Sort.by("id"))));
     }
 
+    @Operation(
+        summary = "Gets a specific follow relationship",
+        description = "Using the usernames of the follower and followed users, retrieves the corresponding follow relationship if it exists."
+    )
     @GetMapping("{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Follow> getFollow(@PathVariable("user1") String user1,
@@ -57,6 +70,10 @@ public class FollowController {
         }
     }
 
+    @Operation(
+        summary = "Creates a new follow relationship",
+        description = "Creates a new follow relationship between two users."
+    )
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Follow> addFollow(@RequestBody Follow follow) {
