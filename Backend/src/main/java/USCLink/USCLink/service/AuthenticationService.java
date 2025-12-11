@@ -43,7 +43,7 @@ public class AuthenticationService {
     private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Value("${auth.jwt.ttl:PT1M}")
+    @Value("${auth.jwt.ttl:PT5M}")
     private Duration tokenTTL;
 
     @Value("${auth.refresh.ttl:PT72H}")

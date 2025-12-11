@@ -10,7 +10,6 @@ import jakarta.validation.constraints.Size;
 @Table(name = "Message")
 public class Message {
 
-    // TODO: De verdad un ID para cada mensaje?
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

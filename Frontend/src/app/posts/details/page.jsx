@@ -119,7 +119,6 @@ export default function PostDetails() {
           headers: { "Content-Type": "application/json", "Authorization": accessToken },
         }
       );
-      setCreatedComment(response.data);
 
       // Limpiar formulario
       setFormData({ user: "", post: "", content: "" });
